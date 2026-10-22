@@ -5,10 +5,10 @@
 The VS Code extension for the [Gungnir](https://github.com/justinangeloperez327/gungnir)
 expressive C++23 web framework and `.gnr` language.
 
-> **Group 2 / developer preview:** The extension registers `.gnr` files as Gungnir,
-> provides TextMate syntax highlighting, basic editor configuration and the
-> **Gungnir: Show Extension Status** command. Native LSP integration and
-> build/generator commands are **not yet implemented**.
+> **Group 3 / developer preview:** `.gnr` files receive Gungnir syntax highlighting,
+> editor indentation/folding rules, documentation-comment continuation, 26 editor
+> snippets and the **Gungnir: Show Extension Status** command. Native LSP
+> integration, diagnostics and build/generator commands are **not yet implemented**.
 
 ## Requirements
 
@@ -40,6 +40,22 @@ Highlighting uses the TextMate grammar in `syntaxes/gungnir.tmLanguage.json`.
 TextMate highlighting is lexical; it does not provide type checking or IntelliSense.
 Those features will use the native Gungnir language server in subsequent groups.
 
+## Snippets and editor assistance
+
+Type `gnr-` inside a Gungnir file to discover 26 editor snippets. Start with
+`gnr-controller`, `gnr-model`, `gnr-migration`, `gnr-middleware`, 
+`gnr-route-get` or `gnr-validate`, then use **Tab** to fill in placeholders.
+Snippets also cover imports, typed functions, events, listeners, policies,
+notifications, mail, conditionals and region markers.
+
+Autocomplete snippets are *templates*, not CLI generators. Referenced modules
+and application types may need to be created in the project.
+
+Editor configuration supports brace, list and call indentation, folding with
+`#region`/`#endregion` or `// #region`/`// #endregion` markers,
+doc-comment continuation and token-aware quote closing. These lexical rules
+do not provide semantic parsing or formatting.
+
 ## Integration tests
 
 ```sh
@@ -70,9 +86,9 @@ second language implementation in TypeScript.
 
 ## Local tests
 
-`npm run test:unit` includes syntax grammar structure and token-rule regression
-checks. `npm run test:integration` confirms VS Code recognizes the `.gnr` language
-for files in a sample project.
+`npm run test:unit` checks syntax highlighting rules, snippet definitions and editor
+patterns. `npm run test:integration` checks `.gnr` registration and the snippet
+contribution in an actual VS Code extension host.
 
 ## License
 

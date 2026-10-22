@@ -32,4 +32,30 @@ suite('Gungnir extension', () => {
     const document = await vscode.workspace.openTextDocument({ language: 'plaintext', content: 'model User {}' });
     assert.equal(document.languageId, 'plaintext');
   });
+
+  test('contributes Gungnir snippets and region markers', async () => {
+    const extension = vscode.extensions.getExtension('gungnir.vscode-gungnir');
+    assert.ok(extension);
+    const manifest = extension.packageJSON as {
+      contributes: {
+        snippets: { language: string; path: string }[];
+        languages: { id: string; configuration: string }[];
+      };
+    };
+    assert.ok(
+      manifest.contributes.snippets.some(
+        (snippet) => snippet.language === 'gungnir' && snippet.path === './snippets/gungnir.code-snippets',
+      ),
+    );
+    assert.ok(
+      manifest.contributes.languages.some(
+        (language) => language.id === 'gungnir' && language.configuration === './language-configuration.json',
+      ),
+    );
+    const document = await vscode.workspace.openTextDocument({
+      language: 'gungnir',
+      content: '// #region Routes\nRoute::get("/", HomeController::index);\n// #endregion\n',
+    });
+    assert.equal(document.languageId, 'gungnir');
+  });
 });

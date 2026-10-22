@@ -2,6 +2,13 @@
 
 ## 0.1.0 — Unreleased
 
+### Group 3
+
+- Add 26 framework-specific snippets with searchable `gnr-` prefixes and tab stops.
+- Improve Gungnir indentation, word boundaries, comment continuation and region folding.
+- Add unit and VS Code integration regression tests for snippet/editor contributions.
+- Keep native LSP integration and Marketplace publishing deferred.
+
 ### Group 2
 
 - Register the `.gnr` extension and the Gungnir editor language.

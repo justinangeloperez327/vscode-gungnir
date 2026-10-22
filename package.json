@@ -54,6 +54,12 @@
         "scopeName": "source.gungnir",
         "path": "./syntaxes/gungnir.tmLanguage.json"
       }
+    ],
+    "snippets": [
+      {
+        "language": "gungnir",
+        "path": "./snippets/gungnir.code-snippets"
+      }
     ]
   },
   "scripts": {

@@ -1,0 +1,272 @@
+{
+  "Gungnir Controller": {
+    "prefix": "gnr-controller",
+    "description": "Controller declaration with a response action",
+    "body": [
+      "controller ${1:HomeController} {",
+      "    ${2:index}() {",
+      "        return text(\"${3:Hello from Gungnir}\");",
+      "    }",
+      "    $0",
+      "}"
+    ]
+  },
+  "Gungnir Controller Action": {
+    "prefix": "gnr-action",
+    "description": "Add a controller action accepting a Request",
+    "body": [
+      "${1:store}(Request request) {",
+      "    $0",
+      "    return noContent();",
+      "}"
+    ]
+  },
+  "Gungnir Model": {
+    "prefix": "gnr-model",
+    "description": "Model with table, fillable and timestamp configuration",
+    "body": [
+      "model ${1:User} {",
+      "    table = \"${2:users}\";",
+      "    fillable = [\"${3:name}\"];",
+      "    timestamps = true;",
+      "    $0",
+      "}"
+    ]
+  },
+  "Gungnir Migration": {
+    "prefix": "gnr-migration",
+    "description": "Create and reverse a database table migration",
+    "body": [
+      "migration ${1:CreateUsers} {",
+      "    up() {",
+      "        Table::create(\"${2:users}\", (table) => {",
+      "            table.id();",
+      "            table.string(\"${3:name}\");",
+      "            table.timestamps();",
+      "            $0",
+      "        });",
+      "    }",
+      "",
+      "    down() {",
+      "        Table::dropIfExists(\"${2:users}\");",
+      "    }",
+      "}"
+    ]
+  },
+  "Gungnir Middleware": {
+    "prefix": "gnr-middleware",
+    "description": "Async middleware with Next continuation",
+    "body": [
+      "middleware ${1:EnsureActiveUser} {",
+      "    async handle(Request request, Next next) {",
+      "        $0",
+      "        return await next(request);",
+      "    }",
+      "}"
+    ]
+  },
+  "Gungnir Free Function": {
+    "prefix": "gnr-function",
+    "description": "Typed free function",
+    "body": [
+      "function ${1:int} ${2:add}(${3:int left}, ${4:int right}) {",
+      "    return ${5:left + right};$0",
+      "}"
+    ]
+  },
+  "Gungnir Async Function": {
+    "prefix": "gnr-async-function",
+    "description": "Typed asynchronous free function",
+    "body": [
+      "async function ${1:void} ${2:performTask}() {",
+      "    $0",
+      "}"
+    ]
+  },
+  "Gungnir Import": {
+    "prefix": "gnr-import",
+    "description": "Import a Gungnir module",
+    "body": [
+      "import ${1:app.models.User};$0"
+    ]
+  },
+  "Gungnir Import Alias": {
+    "prefix": "gnr-import-as",
+    "description": "Import a Gungnir module using an alias",
+    "body": [
+      "import ${1:app.models.User} as ${2:Models};$0"
+    ]
+  },
+  "Gungnir GET Route": {
+    "prefix": "gnr-route-get",
+    "description": "Define a GET route to a controller action",
+    "body": [
+      "Route::get(\"${1:/}\", ${2:HomeController}::${3:index});$0"
+    ]
+  },
+  "Gungnir POST Route": {
+    "prefix": "gnr-route-post",
+    "description": "Define a POST route to a controller action",
+    "body": [
+      "Route::post(\"${1:/users}\", ${2:UserController}::${3:store});$0"
+    ]
+  },
+  "Gungnir Resource Routes": {
+    "prefix": "gnr-routes-resource",
+    "description": "Explicit GET, POST, PUT and DELETE routes",
+    "body": [
+      "Route::get(\"${1:/users}\", ${2:UserController}::index);",
+      "Route::post(\"${1:/users}\", ${2:UserController}::store);",
+      "Route::get(\"${1:/users}/{id}\", ${2:UserController}::show);",
+      "Route::put(\"${1:/users}/{id}\", ${2:UserController}::update);",
+      "Route::delete(\"${1:/users}/{id}\", ${2:UserController}::destroy);$0"
+    ]
+  },
+  "Gungnir Named Route": {
+    "prefix": "gnr-route-name",
+    "description": "Register a named GET route",
+    "body": [
+      "Route::get(\"${1:/dashboard}\", ${2:DashboardController}::${3:index}).name(\"${4:dashboard}\");$0"
+    ]
+  },
+  "Gungnir Request Validation": {
+    "prefix": "gnr-validate",
+    "description": "Validate request fields using Gungnir rules",
+    "body": [
+      "const ${1:data} = request.validate({",
+      "    \"${2:name}\": \"${3:required|string|max:100}\",",
+      "    \"${4:email}\": \"${5:required|email}\"",
+      "});$0"
+    ]
+  },
+  "Gungnir If": {
+    "prefix": "gnr-if",
+    "description": "Conditional block",
+    "body": [
+      "if (${1:condition}) {",
+      "    $0",
+      "}"
+    ]
+  },
+  "Gungnir If Else": {
+    "prefix": "gnr-if-else",
+    "description": "Conditional with else block",
+    "body": [
+      "if (${1:condition}) {",
+      "    $2",
+      "} else {",
+      "    $0",
+      "}"
+    ]
+  },
+  "Gungnir For In": {
+    "prefix": "gnr-for",
+    "description": "Iterate over a collection",
+    "body": [
+      "for (${1:item} in ${2:items}) {",
+      "    $0",
+      "}"
+    ]
+  },
+  "Gungnir Event": {
+    "prefix": "gnr-event",
+    "description": "Event declaration with typed fields",
+    "body": [
+      "event ${1:UserRegistered} {",
+      "    int ${2:user_id};",
+      "    string ${3:email};",
+      "    $0",
+      "}"
+    ]
+  },
+  "Gungnir Listener": {
+    "prefix": "gnr-listener",
+    "description": "Listener handling a typed event",
+    "body": [
+      "listener ${1:RecordRegistration} {",
+      "    priority = 0;",
+      "",
+      "    handle(${2:UserRegistered} event) {",
+      "        $0",
+      "    }",
+      "}"
+    ]
+  },
+  "Gungnir Policy": {
+    "prefix": "gnr-policy",
+    "description": "Policy with authorization decision",
+    "body": [
+      "policy ${1:ProjectPolicy} {",
+      "    view(${2:User} actor, ${3:Project} project) {",
+      "        return ${4:allow()};$0",
+      "    }",
+      "}"
+    ]
+  },
+  "Gungnir Mail": {
+    "prefix": "gnr-mail",
+    "description": "Mail declaration with subject and body",
+    "body": [
+      "mail ${1:WelcomeMail} {",
+      "    string ${2:name};",
+      "",
+      "    subject() {",
+      "        return \"${3:Welcome}\";",
+      "    }",
+      "",
+      "    text() {",
+      "        return \"${4:Welcome, }\" + name;",
+      "    }",
+      "    $0",
+      "}"
+    ]
+  },
+  "Gungnir Notification": {
+    "prefix": "gnr-notification",
+    "description": "Notification via the mail channel",
+    "body": [
+      "notification ${1:WelcomeNotification} {",
+      "    via(${2:User} recipient) {",
+      "        return [\"mail\"];",
+      "    }",
+      "",
+      "    toMail(${2:User} recipient) {",
+      "        return ${3:WelcomeMail}(recipient.name);",
+      "    }",
+      "    $0",
+      "}"
+    ]
+  },
+  "Gungnir Has Many Relationship": {
+    "prefix": "gnr-has-many",
+    "description": "Define a model hasMany relationship",
+    "body": [
+      "${1:posts}() {",
+      "    return hasMany<${2:Post}>();$0",
+      "}"
+    ]
+  },
+  "Gungnir Const Binding": {
+    "prefix": "gnr-const",
+    "description": "Immutable local binding",
+    "body": [
+      "const ${1:value} = ${2:expression};$0"
+    ]
+  },
+  "Gungnir Let Binding": {
+    "prefix": "gnr-let",
+    "description": "Mutable local binding",
+    "body": [
+      "let ${1:count} = ${2:0};$0"
+    ]
+  },
+  "Gungnir Region": {
+    "prefix": "gnr-region",
+    "description": "Named foldable region (comment directive)",
+    "body": [
+      "// #region ${1:Region}",
+      "$0",
+      "// #endregion"
+    ]
+  }
+}

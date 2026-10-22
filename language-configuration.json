@@ -74,13 +74,39 @@
     ]
   ],
   "indentationRules": {
-    "increaseIndentPattern": "^.*\\{[^}\"']*$",
-    "decreaseIndentPattern": "^\\s*\\}"
+    "increaseIndentPattern": "^(?!\\s*(?://|\\*|#)).*(?:\\{|\\[|\\()\\s*(?://.*)?$",
+    "decreaseIndentPattern": "^\\s*[}\\]\\)]"
   },
   "folding": {
+    "offSide": false,
     "markers": {
-      "start": "^\\s*//\\s*#?region\\b",
-      "end": "^\\s*//\\s*#?endregion\\b"
+      "start": "^\\s*(?://\\s*#?\\s*|#\\s*)region\\b",
+      "end": "^\\s*(?://\\s*#?\\s*|#\\s*)endregion\\b"
     }
-  }
+  },
+  "wordPattern": "(-?\\d+(?:\\.\\d+)?)|([A-Za-z_][A-Za-z0-9_]*)",
+  "onEnterRules": [
+    {
+      "beforeText": "^\\s*/\\*\\*(?!/).*$",
+      "afterText": "^\\s*\\*/$",
+      "action": {
+        "indent": "indentOutdent",
+        "appendText": " * "
+      }
+    },
+    {
+      "beforeText": "^\\s*/\\*\\*(?!/).*$",
+      "action": {
+        "indent": "none",
+        "appendText": " * "
+      }
+    },
+    {
+      "beforeText": "^\\s*\\*(?!/).*$",
+      "action": {
+        "indent": "none",
+        "appendText": "* "
+      }
+    }
+  ]
 }
