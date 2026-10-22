@@ -84,7 +84,8 @@ process.stdin.on('data', (chunk) => {
     } else if (msg.method === 'textDocument/didChange') {
       const uri = params.textDocument.uri;
       const doc = documents.get(uri);
-      if (!doc) continue;
+      if (!doc || params.textDocument.version <= doc.version) continue;
+      // Match the native Gungnir server: never apply duplicate/older edits.
       const wasBroken = doc.text.includes('BROKEN');
       const oldVersion = doc.version;
       change(doc, params.contentChanges);
