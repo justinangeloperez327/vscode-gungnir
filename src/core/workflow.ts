@@ -51,6 +51,7 @@ export interface WorkflowProblem {
 
 /** Gungnir compiler and structured-project validation diagnostics. */
 export function parseWorkflowProblem(line: string): WorkflowProblem | undefined {
+  // eslint-disable-next-line no-control-regex -- ANSI SGR escape sequences from native CLI output.
   const raw = line.replace(/\x1B\[[0-9;]*m/g, '').trim();
   const source = /^(.+):(\d+):(\d+):\s+(error|warning)(?:\[([^\]]+)\])?:\s+(.+)$/.exec(raw);
   const structured = !source
