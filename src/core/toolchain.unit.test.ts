@@ -120,6 +120,21 @@ describe('Gungnir CLI / SDK detection', () => {
     expect(result.diagnostics.join(' ')).toContain('Expected');
   });
 
+  it('does not mistake the compiler banner for the CLI version', async () => {
+    const f = fixture();
+    f.outputs.set(f.cli, 'Gungnir compiler 1.0.2 (language 1)');
+    const result = await discoverToolchain({ executablePath: f.cli, platform: 'linux' }, f.io);
+    expect(result.state).toBe('invalid');
+  });
+
+  it('accepts prerelease CLI/compiler versions', async () => {
+    const f = fixture({ sdk: true, version: 'Gungnir 1.1.0-rc.2',
+      compilerVersion: 'Gungnir compiler 1.1.0-rc.2 (language 1)' });
+    const result = await discoverToolchain({ executablePath: f.cli, platform: 'linux' }, f.io);
+    expect(result.state).toBe('ready');
+    expect(result.version).toBe('1.1.0-rc.2');
+  });
+
   it('handles version process failures without throwing', async () => {
     const f = fixture();
     f.outputs.set(f.cli, Error('timed out'));
