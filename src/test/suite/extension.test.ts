@@ -23,8 +23,8 @@ suite('Gungnir extension', () => {
       'app/models/User.gnr',
       'routes/web.gnr',
     ]) {
-      const doc = await vscode.workspace.openTextDocument(vscode.Uri.joinPath(project.uri, relative));
-      assert.equal(doc.languageId, 'gungnir', `Unexpected language for ${relative}`);
+      const opened: vscode.TextDocument = await vscode.workspace.openTextDocument(vscode.Uri.joinPath(project.uri, relative));
+      assert.equal(opened.languageId, 'gungnir', `Unexpected language for ${relative}`);
     }
   });
 
