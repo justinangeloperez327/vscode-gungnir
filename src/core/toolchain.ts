@@ -67,9 +67,10 @@ export const realProbeIO: ProbeIO = {
 };
 
 function parseVersion(output: string, compiler: boolean): string | undefined {
+  // Never accept another tool's output as the CLI (e.g. "Gungnir compiler").
   const match = output.match(compiler
-    ? /^Gungnir compiler\s+([^\s()]+)/i
-    : /^Gungnir\s+([^\s()]+)/i);
+    ? /^Gungnir compiler\s+(v?\d+\.\d+\.\d+(?:[-+][\w.-]+)?|development)(?=\s|$|\()/i
+    : /^Gungnir\s+(v?\d+\.\d+\.\d+(?:[-+][\w.-]+)?|development)(?=\s|$)/i);
   return match?.[1];
 }
 
