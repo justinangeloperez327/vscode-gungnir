@@ -114,7 +114,7 @@ function semanticResponse(method, params) {
     return [{
       name: 'HomeController', detail: 'controller', kind: 5,
       range: { start: { line: 0, character: 0 }, end: {
-        line: doc.text.split('\n').length - 1, character: 0,
+        line: doc.text.split('\n').length - 1, character: doc.text.split('\n').at(-1).length,
       } }, selectionRange: controller,
       children: [{
         name: 'index', detail: 'Response', kind: 6,
