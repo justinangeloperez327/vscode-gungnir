@@ -225,6 +225,39 @@ suite('Gungnir extension', () => {
       assert.equal(locations[0].uri.toString(), document.uri.toString());
       assert.equal(document.getText(locations[0].range), 'HomeController');
 
+
+      const references = await vscode.commands.executeCommand<vscode.Location[]>(
+        'vscode.executeReferenceProvider', routeDoc.uri, routePos,
+      );
+      assert.ok(references?.length >= 2, 'Native LSP References must include the declaration and its use');
+      assert.ok(references.some((item) => item.uri.toString() === document.uri.toString()));
+      assert.ok(references.some((item) => item.uri.toString() === routeDoc.uri.toString()));
+
+      const preparatory = await vscode.commands.executeCommand<vscode.Range>(
+        'vscode.prepareRename', routeDoc.uri, routePos,
+      );
+      assert.ok(preparatory, 'Native LSP Prepare Rename must resolve the identifier');
+      assert.equal(routeDoc.getText(preparatory), 'HomeController');
+
+      const rename = await vscode.commands.executeCommand<vscode.WorkspaceEdit>(
+        'vscode.executeDocumentRenameProvider', routeDoc.uri, routePos, 'BetterController',
+      );
+      assert.ok(rename, 'Native LSP Rename must provide a multi-file workspace edit');
+      assert.ok(rename.get(document.uri)?.some((edit) => edit.newText === 'BetterController'));
+      assert.ok(rename.get(routeDoc.uri)?.some((edit) => edit.newText === 'BetterController'));
+      // A rename preview may not modify source until the user applies it.
+      assert.ok(document.getText().includes('HomeController'));
+      assert.ok(routeDoc.getText().includes('HomeController'));
+
+      const signature = await vscode.commands.executeCommand<vscode.SignatureHelp>(
+        'vscode.executeSignatureHelpProvider',
+        routeDoc.uri,
+        routeDoc.positionAt(routeDoc.getText().indexOf('HomeController') + 2),
+      );
+      assert.ok(signature?.signatures.length, 'Expected native callable Signature Help');
+      assert.ok(signature.signatures[0].label.includes('get(string path, Handler handler)'));
+      assert.equal(signature.activeParameter, 1);
+
       const missing = await vscode.commands.executeCommand<vscode.Hover[]>(
         'vscode.executeHoverProvider', routeDoc.uri, new vscode.Position(0, 0),
       );

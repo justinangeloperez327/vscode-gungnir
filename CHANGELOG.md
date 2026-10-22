@@ -2,6 +2,13 @@
 
 ## 0.1.0 — Unreleased
 
+### Group 11
+
+- Extend upstream native Gungnir LSP with compiler-backed References, Prepare Rename, Rename, and Signature Help.
+- Verify VS Code receives advertised capabilities and returns multi-file workspace edits.
+- Add extension-host protocol regression tests and document the required updated native SDK.
+
+
 ### Group 10
 
 - Add native `gungnir build`, `gungnir run`, `gungnir dev` commands and build/run `--release` task variants.

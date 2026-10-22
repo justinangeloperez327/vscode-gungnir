@@ -5,9 +5,9 @@
 The VS Code extension for the [Gungnir](https://github.com/justinangeloperez327/gungnir)
 expressive C++23 web framework and `.gnr` language.
 
-> **Group 10 / developer preview:** Syntax highlighting, native IntelliSense,
-> formatting, CLI-backed generators, and build/run/dev tasks are available.
-> Advanced multi-root language server support remains planned.
+> **Group 11 / developer preview:** Syntax highlighting, compiler diagnostics,
+> native IntelliSense, formatting, CLI generators, build/run/dev tasks, and
+> advanced LSP features with a Group 11-compatible SDK. Multi-root support follows.
 
 ## Requirements
 
@@ -219,6 +219,20 @@ part of your existing workflow:
 The extension is the task provider. You do not need to hard-code executable
 paths in `tasks.json`; configure `gungnir.executablePath` or
 `gungnir.sdkRoot` in VS Code settings.
+
+## Advanced native IntelliSense
+
+With a Gungnir SDK version that advertises the new LSP capabilities, VS Code
+also supports **Find All References** (`Shift+F12`), **Rename Symbol** (`F2`),
+and **Signature Help** (`Ctrl+Shift+Space`). Reference discovery and renaming
+are based on compiler-resolved symbol identity across imported modules.
+Rename returns a previewable workspace edit rather than silently writing files.
+Signature Help uses resolved argument types and names.
+
+These features require an updated `gungnir lsp` executable. Older SDKs do not
+advertise them, and the extension intentionally does not guess references using
+text matches or perform unsafe renames. The existing official VS Code Language
+Client automatically registers features from the server capabilities.
 
 ## Native formatting
 

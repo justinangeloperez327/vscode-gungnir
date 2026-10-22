@@ -104,9 +104,61 @@ function formatDocument(params) {
   }];
 }
 
+
+function wordLocations(doc, name) {
+  const found = [];
+  const expression = new RegExp('\\b' + name + '\\b', 'g');
+  for (const match of doc.text.matchAll(expression)) {
+    const prior = doc.text.slice(0, match.index).split('\n');
+    const line = prior.length - 1;
+    const column = prior.at(-1).length;
+    found.push({
+      uri: doc.uri,
+      range: {
+        start: { line, character: column },
+        end: { line, character: column + name.length },
+      },
+    });
+  }
+  return found;
+}
+function symbolReferences(name, includeDeclaration = true) {
+  const found = [...documents.values()].flatMap((doc) => wordLocations(doc, name));
+  return includeDeclaration ? found : found.filter((item) =>
+    !item.uri.endsWith('/app/controllers/HomeController.gnr'));
+}
+
 function semanticResponse(method, params) {
   const doc = documents.get(params.textDocument.uri);
   if (!doc) return null;
+  if (method === 'textDocument/signatureHelp') {
+    if (!doc.text.includes('Route::get(')) return null;
+    return {
+      signatures: [{
+        label: 'Response get(string path, Handler handler)',
+        parameters: [{ label: 'string path' }, { label: 'Handler handler' }],
+      }],
+      activeSignature: 0,
+      activeParameter: params.position.character > doc.text.indexOf(',') ? 1 : 0,
+    };
+  }
+  const found = symbolAt(doc, params.position);
+  if (method === 'textDocument/references') {
+    return found ? symbolReferences(found.name, params.context?.includeDeclaration !== false) : [];
+  }
+  if (method === 'textDocument/prepareRename') {
+    return found ? { range: found.range, placeholder: found.name } : null;
+  }
+  if (method === 'textDocument/rename') {
+    if (!found || !/^[A-Za-z_][A-Za-z0-9_]*$/.test(params.newName)) return null;
+    const changes = {};
+    for (const reference of symbolReferences(found.name)) {
+      (changes[reference.uri] ??= []).push({
+        range: reference.range, newText: params.newName,
+      });
+    }
+    return { changes };
+  }
   if (method === 'textDocument/documentSymbol') {
     const controller = selection(doc.text, 'HomeController');
     const action = selection(doc.text, 'index');
@@ -129,7 +181,6 @@ function semanticResponse(method, params) {
       { label: 'return', detail: 'keyword', kind: 14 },
     ] };
   }
-  const found = symbolAt(doc, params.position);
   if (!found) return null;
   const detail = found.name === 'index'
     ? 'Response index()' : 'controller HomeController';
@@ -169,6 +220,9 @@ process.stdin.on('data', (chunk) => {
           completionProvider: { resolveProvider: false },
           documentSymbolProvider: true,
           documentFormattingProvider: true,
+          referencesProvider: true,
+          renameProvider: { prepareProvider: true },
+          signatureHelpProvider: { triggerCharacters: ['(', ','] },
         },
         serverInfo: { name: 'gungnir-test-double', version: '1.0.2' },
       });
@@ -201,7 +255,11 @@ process.stdin.on('data', (chunk) => {
     } else if (msg.method === 'textDocument/hover'
       || msg.method === 'textDocument/definition'
       || msg.method === 'textDocument/completion'
-      || msg.method === 'textDocument/documentSymbol') {
+      || msg.method === 'textDocument/documentSymbol'
+      || msg.method === 'textDocument/references'
+      || msg.method === 'textDocument/prepareRename'
+      || msg.method === 'textDocument/rename'
+      || msg.method === 'textDocument/signatureHelp') {
       if (msg.id !== undefined) reply(msg.id, semanticResponse(msg.method, params));
     } else if (msg.method === 'shutdown') {
       shutdown = true;
