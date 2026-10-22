@@ -119,9 +119,16 @@ suite('Gungnir extension', () => {
       const document: vscode.TextDocument = await vscode.workspace.openTextDocument(
         vscode.Uri.joinPath(project.uri, 'app/controllers/HomeController.gnr'),
       );
-      const status = await vscode.commands.executeCommand<{ state: string; detail: string }>(
+      let status = await vscode.commands.executeCommand<{ state: string; detail: string }>(
         'gungnir.startLanguageServer',
       );
+      const startupDeadline = Date.now() + 7000;
+      while (status.state !== 'running' && Date.now() < startupDeadline) {
+        await new Promise((resolve) => setTimeout(resolve, 75));
+        status = await vscode.commands.executeCommand<{ state: string; detail: string }>(
+          'gungnir.languageServerStatus',
+        );
+      }
       assert.equal(status.state, 'running', status.detail);
       // Simulate editing a Gungnir document. The mock server responds only to
       // didOpen/didChange/didSave, proving the standard LSP synchronization path.
