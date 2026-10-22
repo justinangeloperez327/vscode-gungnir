@@ -254,8 +254,10 @@ suite('Gungnir extension', () => {
       ].join('\n');
       await vscode.workspace.fs.writeFile(formattedUri, Buffer.from(raw, 'utf8'));
       const originalFormatEnabled = settings.inspect<boolean>('formatting.enabled')?.globalValue;
-      const languageConfig = vscode.workspace.getConfiguration('[gungnir]');
-      const oldFormatOnSave = languageConfig.inspect<boolean>('editor.formatOnSave')?.workspaceValue;
+      const languageConfig = vscode.workspace.getConfiguration('editor', {
+        uri: formattedUri, languageId: 'gungnir',
+      });
+      const oldFormatOnSave = languageConfig.inspect<boolean>('formatOnSave')?.workspaceLanguageValue;
       try {
         const formatDoc = await vscode.workspace.openTextDocument(formattedUri);
         await vscode.window.showTextDocument(formatDoc);
@@ -283,7 +285,7 @@ suite('Gungnir extension', () => {
         assert.equal(disabled?.length ?? 0, 0, 'Disabled formatting must return no edits');
         await settings.update('formatting.enabled', true, vscode.ConfigurationTarget.Global);
         // Test VS Code's own opt-in format-on-save, never a competing save hook.
-        await languageConfig.update('editor.formatOnSave', true, vscode.ConfigurationTarget.Workspace);
+        await languageConfig.update('formatOnSave', true, vscode.ConfigurationTarget.Workspace);
         const unformat = new vscode.WorkspaceEdit();
         unformat.replace(formattedUri, new vscode.Range(
           formatDoc.positionAt(0), formatDoc.positionAt(formatDoc.getText().length),
@@ -295,7 +297,7 @@ suite('Gungnir extension', () => {
         assert.equal(saved, expected, 'Format on Save should apply the native formatter');
       } finally {
         await settings.update('formatting.enabled', originalFormatEnabled, vscode.ConfigurationTarget.Global);
-        await languageConfig.update('editor.formatOnSave', oldFormatOnSave, vscode.ConfigurationTarget.Workspace);
+        await languageConfig.update('formatOnSave', oldFormatOnSave, vscode.ConfigurationTarget.Workspace);
         await vscode.workspace.fs.delete(formattedUri, { useTrash: false });
       }
 
