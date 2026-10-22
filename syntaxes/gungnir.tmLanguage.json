@@ -1,0 +1,317 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Gungnir",
+  "scopeName": "source.gungnir",
+  "fileTypes": [
+    "gnr"
+  ],
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#imports"
+    },
+    {
+      "include": "#declarations"
+    },
+    {
+      "include": "#variables"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#languageConstants"
+    },
+    {
+      "include": "#modelMetadata"
+    },
+    {
+      "include": "#flowKeywords"
+    },
+    {
+      "include": "#types"
+    },
+    {
+      "include": "#namespaces"
+    },
+    {
+      "include": "#calls"
+    },
+    {
+      "include": "#objectKeys"
+    },
+    {
+      "include": "#properties"
+    },
+    {
+      "include": "#operators"
+    },
+    {
+      "include": "#punctuation"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.number-sign.gungnir",
+          "begin": "^[ \\t]*#",
+          "end": "(?<!\\\\)$"
+        },
+        {
+          "name": "comment.line.double-slash.gungnir",
+          "match": "//.*$"
+        },
+        {
+          "name": "comment.block.gungnir",
+          "begin": "/\\*",
+          "end": "\\*/"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.other.raw.gungnir",
+          "begin": "\\bR\"([^\\s()\\\\]{0,16})\\(",
+          "end": "\\)\\1\"",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.gungnir"
+            }
+          },
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.gungnir"
+            }
+          }
+        },
+        {
+          "name": "string.quoted.double.gungnir",
+          "begin": "\"",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.gungnir"
+            }
+          },
+          "end": "\"|(?=$)",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.gungnir"
+            }
+          },
+          "patterns": [
+            {
+              "name": "constant.character.escape.gungnir",
+              "match": "\\\\(?:[abfnrtv\\\\'\"?]|[0-7]{1,3}|x[0-9A-Fa-f]+|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})"
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.single.gungnir",
+          "begin": "'",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.gungnir"
+            }
+          },
+          "end": "'|(?=$)",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.gungnir"
+            }
+          },
+          "patterns": [
+            {
+              "name": "constant.character.escape.gungnir",
+              "match": "\\\\(?:[abfnrtv\\\\'\"?]|[0-7]{1,3}|x[0-9A-Fa-f]+|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})"
+            }
+          ]
+        }
+      ]
+    },
+    "imports": {
+      "patterns": [
+        {
+          "match": "\\b(import)\\s+([A-Za-z_]\\w*(?:\\.[A-Za-z_]\\w*)*)(?:\\s+(as)\\s+([A-Za-z_]\\w*))?",
+          "captures": {
+            "1": {
+              "name": "keyword.control.import.gungnir"
+            },
+            "2": {
+              "name": "entity.name.namespace.gungnir"
+            },
+            "3": {
+              "name": "keyword.control.import.gungnir"
+            },
+            "4": {
+              "name": "entity.name.namespace.alias.gungnir"
+            }
+          }
+        }
+      ]
+    },
+    "declarations": {
+      "patterns": [
+        {
+          "match": "\\b(controller|model|migration|middleware|event|listener|job|policy|notification|mail|validation)\\s+([A-Za-z_]\\w*)",
+          "captures": {
+            "1": {
+              "name": "storage.type.declaration.gungnir"
+            },
+            "2": {
+              "name": "entity.name.type.gungnir"
+            }
+          }
+        },
+        {
+          "match": "\\b(function)\\s+(?:([A-Za-z_]\\w*(?:<[^<>\\n]+>)?\\??)\\s+)?([A-Za-z_]\\w*)(?=\\s*\\()",
+          "captures": {
+            "1": {
+              "name": "storage.type.function.gungnir"
+            },
+            "2": {
+              "name": "storage.type.gungnir"
+            },
+            "3": {
+              "name": "entity.name.function.gungnir"
+            }
+          }
+        }
+      ]
+    },
+    "variables": {
+      "patterns": [
+        {
+          "match": "\\b(const|let)\\b",
+          "captures": {
+            "1": {
+              "name": "storage.type.variable.gungnir"
+            }
+          }
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.hex.gungnir",
+          "match": "\\b0[xX][0-9a-fA-F_]+\\b"
+        },
+        {
+          "name": "constant.numeric.binary.gungnir",
+          "match": "\\b0[bB][01_]+\\b"
+        },
+        {
+          "name": "constant.numeric.decimal.gungnir",
+          "match": "(?:\\b\\d[\\d_]*(?:\\.[\\d_]*)?|\\.[\\d_]+)(?:[eE][+-]?[\\d_]+)?[fFlLuU]*\\b"
+        }
+      ]
+    },
+    "languageConstants": {
+      "patterns": [
+        {
+          "name": "constant.language.gungnir",
+          "match": "\\b(?:true|false|null)\\b"
+        }
+      ]
+    },
+    "modelMetadata": {
+      "patterns": [
+        {
+          "name": "variable.other.property.model.gungnir",
+          "match": "\\b(?:table|connection|primaryKey|fillable|hidden|visible|casts|timestamps|softDeletes|incrementing)\\b(?=\\s*=)"
+        }
+      ]
+    },
+    "flowKeywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.flow.gungnir",
+          "match": "\\b(?:return|throw|if|else|while|for|in|break|continue|await|async)\\b"
+        },
+        {
+          "name": "storage.modifier.gungnir",
+          "match": "\\b(?:public|protected|private|inject)\\b"
+        }
+      ]
+    },
+    "types": {
+      "patterns": [
+        {
+          "name": "support.type.primitive.gungnir",
+          "match": "\\b(?:void|bool|boolean|string|int|integer|int64|uint64|float|double|decimal)\\b"
+        },
+        {
+          "name": "support.type.framework.gungnir",
+          "match": "\\b(?:Response|Request|Json|Data|Decimal|DateTime|Collection|List|Map|Query|Table|Model)\\b"
+        }
+      ]
+    },
+    "namespaces": {
+      "patterns": [
+        {
+          "name": "support.class.gungnir",
+          "match": "\\b(?:Route|Table)\\b(?=::)"
+        },
+        {
+          "name": "entity.name.namespace.gungnir",
+          "match": "\\b[A-Za-z_]\\w*(?=::)"
+        }
+      ]
+    },
+    "calls": {
+      "patterns": [
+        {
+          "name": "entity.name.function.call.gungnir",
+          "match": "\\b[A-Za-z_]\\w*(?=\\s*\\()"
+        }
+      ]
+    },
+    "objectKeys": {
+      "patterns": [
+        {
+          "name": "variable.other.property.key.gungnir",
+          "match": "\\b[A-Za-z_]\\w*(?=\\s*:(?!:))"
+        }
+      ]
+    },
+    "properties": {
+      "patterns": [
+        {
+          "name": "variable.other.property.gungnir",
+          "match": "(?<=\\.)[A-Za-z_]\\w*\\b(?!\\s*\\()"
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "name": "keyword.operator.gungnir",
+          "match": "(?:=>|::|\\?\\?|\\?\\.|==|!=|<=|>=|&&|\\|\\||\\+=|-=|\\*=|/=|%=|\\+\\+|--|[=+\\-*/%<>!?&|])"
+        }
+      ]
+    },
+    "punctuation": {
+      "patterns": [
+        {
+          "name": "punctuation.section.block.gungnir",
+          "match": "[{}]"
+        },
+        {
+          "name": "punctuation.section.sequence.gungnir",
+          "match": "[\\[\\]()]"
+        },
+        {
+          "name": "punctuation.separator.gungnir",
+          "match": "[,;:]"
+        }
+      ]
+    }
+  }
+}

@@ -30,6 +30,30 @@
         "title": "Gungnir: Show Extension Status",
         "category": "Gungnir"
       }
+    ],
+    "languages": [
+      {
+        "id": "gungnir",
+        "aliases": [
+          "Gungnir",
+          "gungnir"
+        ],
+        "extensions": [
+          ".gnr"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./resources/icons/gungnir-light.svg",
+          "dark": "./resources/icons/gungnir-dark.svg"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "gungnir",
+        "scopeName": "source.gungnir",
+        "path": "./syntaxes/gungnir.tmLanguage.json"
+      }
     ]
   },
   "scripts": {

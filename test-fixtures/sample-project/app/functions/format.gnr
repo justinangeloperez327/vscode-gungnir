@@ -1,0 +1,7 @@
+/* Example function with a typed return value */
+import app.models.User as Models;
+async function string formatUser(Models::User user) {
+    const greeting = "Hello, ";
+    let count = 0x10;
+    return greeting + user.name;
+}

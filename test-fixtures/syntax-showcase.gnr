@@ -1,0 +1,33 @@
+#region language-samples
+// comment
+/* multiline
+   comment */
+import app.models.User as Models;
+model User {
+    table = "users";
+    fillable = ["name", "email"];
+    casts = { "active": "bool" };
+    timestamps = true;
+}
+controller HomeController {
+    Response index() {
+        const value = 42;
+        let active = true;
+        if (active) { return text("Hello \\"Gungnir\\""); }
+        return json({ id: 1, active: false, path: null });
+    }
+}
+migration CreateUsers {
+    up() {
+        Table::create("users", (table) => {
+            table.id();
+            table.string("name");
+        });
+    }
+}
+function int add(int left, int right) {
+    return left + right;
+}
+Route::get("/users/{id}", HomeController::index);
+const rawText = R"gnr(quoted "value" with // inside)gnr";
+#endregion

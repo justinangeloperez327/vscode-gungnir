@@ -1,0 +1,7 @@
+// Model configuration example
+model User {
+    table = "users";
+    fillable = ["name", "email"];
+    casts = { "active": "bool" };
+    timestamps = true;
+}
