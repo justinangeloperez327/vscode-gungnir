@@ -1,0 +1,70 @@
+{
+  "name": "vscode-gungnir",
+  "displayName": "Gungnir",
+  "description": "VS Code language tools and developer commands for the Gungnir framework.",
+  "version": "0.1.0",
+  "publisher": "gungnir",
+  "license": "MIT",
+  "private": false,
+  "engines": {
+    "vscode": "^1.100.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Other"
+  ],
+  "keywords": [
+    "gungnir",
+    "gnr",
+    "cpp",
+    "framework"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onCommand:gungnir.showStatus"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "gungnir.showStatus",
+        "title": "Gungnir: Show Extension Status",
+        "category": "Gungnir"
+      }
+    ]
+  },
+  "scripts": {
+    "clean": "node scripts/clean.mjs",
+    "typecheck": "tsc --noEmit",
+    "bundle": "node scripts/esbuild.mjs",
+    "watch": "node scripts/esbuild.mjs --watch",
+    "build": "npm run typecheck && npm run bundle",
+    "lint": "eslint .",
+    "test": "npm run test:unit",
+    "test:unit": "vitest run",
+    "test:integration": "node dist-test/runTest.js",
+    "package": "npm run build && vsce package --no-dependencies -o vscode-gungnir.vsix",
+    "vscode:prepublish": "npm run build"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.36.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^24.0.0",
+    "@types/vscode": "^1.100.0",
+    "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^3.6.0",
+    "esbuild": "^0.25.12",
+    "eslint": "^9.36.0",
+    "globals": "^16.4.0",
+    "mocha": "^11.7.4",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.0",
+    "vitest": "^3.2.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/justinangeloperez327/vscode-gungnir.git"
+  },
+  "bugs": {
+    "url": "https://github.com/justinangeloperez327/vscode-gungnir/issues"
+  }
+}
