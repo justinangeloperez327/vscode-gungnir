@@ -5,10 +5,9 @@
 The VS Code extension for the [Gungnir](https://github.com/justinangeloperez327/gungnir)
 expressive C++23 web framework and `.gnr` language.
 
-> **Group 7 / developer preview:** Syntax highlighting, 26 snippets, SDK detection,
-> diagnostics, and native IntelliSense (hover, Go to Definition, completion,
-> Outline symbols) are available through `gungnir lsp`. Multi-root support,
-> formatting refinement and framework commands remain on the roadmap.
+> **Group 8 / developer preview:** Syntax highlighting, 26 snippets, SDK detection,
+> diagnostics, native IntelliSense and document formatting via `gungnir lsp`.
+> Multi-root support and framework generators/build commands remain on the roadmap.
 
 ## Requirements
 
@@ -134,6 +133,37 @@ VS Code extension-host tests exercise all four features over real JSON-RPC
 stdio transport against a protocol-compatible fixture, including cross-file
 definitions and isolation from plaintext documents. Testing with the
 installed Windows SDK is still a separate release-validation step.
+
+## Native formatting
+
+The extension registers itself as the default document formatter for Gungnir
+(`.gnr`) files only. With the native `gungnir lsp` process running:
+
+- Use **Format Document** (`Shift+Alt+F` on Windows) to format your source.
+- To opt in to format-on-save, add these language-scoped VS Code settings:
+
+```json
+{
+  "[gungnir]": {
+    "editor.defaultFormatter": "gungnir.vscode-gungnir",
+    "editor.formatOnSave": true
+  }
+}
+```
+
+- Set `gungnir.formatting.enabled` to `false` to disable native document
+  formatting without disabling diagnostics or IntelliSense.
+
+Formatting is delegated to Gungnir's C++ Formatter via LSP; the extension does
+not implement a second formatter or transform source locally. Its current
+indentation style is **four spaces**, and the native formatter does not yet
+honor VS Code tab-size or insert-spaces formatting preferences. Certain
+compatibility/preprocessor constructs deliberately result in a server-side
+formatting error rather than a destructive rewrite.
+
+Format-on-save is **opt in**. The extension does not force formatting globally
+and does not register a second save hook. VS Code's formatting commands are
+only available for trusted local `.gnr` files within the active workspace.
 
 ## Compiler diagnostics and synchronization
 

@@ -6,6 +6,7 @@ import {
 } from 'vscode-languageclient/node';
 import { DiagnosticGate } from './diagnostics';
 import { DiagnosticFilterStream } from './diagnostic-stream';
+import { mayFormat } from './formatting';
 import type { ManagedClient } from './lifecycle';
 
 export interface LaunchConfiguration {
@@ -76,6 +77,22 @@ export function createLanguageServer(
     synchronize: { fileEvents: watcher },
     outputChannel: output,
     diagnosticCollectionName: 'gungnir',
+    middleware: {
+      provideDocumentFormattingEdits(document, options, token, next) {
+        const folder = vscode.workspace.getWorkspaceFolder(document.uri);
+        const allowed = mayFormat({
+          trusted: vscode.workspace.isTrusted,
+          enabled: vscode.workspace.getConfiguration('gungnir', document.uri)
+            .get<boolean>('formatting.enabled', true),
+          languageId: document.languageId,
+          scheme: document.uri.scheme,
+          inWorkspace: folder?.uri.toString() === folderUri,
+        });
+        // Do not replace the C++ formatter with a different TS formatting engine.
+        return allowed ? next(document, options, token) : [];
+      },
+    },
+
     errorHandler: {
       error: () => ({ action: ErrorAction.Continue }),
       closed: () => ({ action: CloseAction.DoNotRestart }),

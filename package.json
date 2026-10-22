@@ -132,7 +132,18 @@
           "default": true,
           "scope": "window",
           "markdownDescription": "Enable Gungnir's native `gungnir lsp` process when a `.gnr` source document is open in a trusted workspace. Requires the Gungnir CLI."
+        },
+        "gungnir.formatting.enabled": {
+          "type": "boolean",
+          "default": true,
+          "scope": "resource",
+          "markdownDescription": "Allow native `gungnir lsp` document formatting for trusted local `.gnr` files. Disable to return no formatting edits. The native formatter uses a fixed four-space style and ignores editor tab-size preferences."
         }
+      }
+    },
+    "configurationDefaults": {
+      "[gungnir]": {
+        "editor.defaultFormatter": "gungnir.vscode-gungnir"
       }
     }
   },

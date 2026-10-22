@@ -1,0 +1,27 @@
+import { describe, expect, it } from 'vitest';
+import { mayFormat, type FormattingContext } from './formatting';
+
+const valid: FormattingContext = {
+  trusted: true,
+  enabled: true,
+  languageId: 'gungnir',
+  scheme: 'file',
+  inWorkspace: true,
+};
+
+describe('native Gungnir formatting policy', () => {
+  it('allows local files in a trusted project by default', () => {
+    expect(mayFormat(valid)).toBe(true);
+  });
+
+  it.each([
+    [{ trusted: false }, 'untrusted workspace'],
+    [{ enabled: false }, 'disabled formatting'],
+    [{ languageId: 'plaintext' }, 'non-Gungnir document'],
+    [{ scheme: 'untitled' }, 'untitled document'],
+    [{ scheme: 'vscode-remote' }, 'remote document'],
+    [{ inWorkspace: false }, 'file outside Gungnir workspace'],
+  ])('denies %s (%s)', (change) => {
+    expect(mayFormat({ ...valid, ...change })).toBe(false);
+  });
+});

@@ -2,6 +2,14 @@
 
 ## 0.1.0 — Unreleased
 
+### Group 8
+
+- Enable native Gungnir document formatting with VS Code's language-specific default formatter.
+- Add `gungnir.formatting.enabled` policy to disable formatting without disabling IntelliSense.
+- Document opt-in format-on-save; never force it globally or implement a duplicate formatter.
+- Expand the LSP fixture and extension-host tests for formatting edits, idempotence, disabled state and save-time formatting.
+
+
 ### Group 7
 
 - Verify native hover, Go to Definition, completions and hierarchical document symbols through real VS Code language-client registrations.

@@ -74,6 +74,18 @@ suite('Gungnir extension', () => {
     assert.equal(typeof result.message, 'string');
   });
 
+  test('registers Gungnir as default formatter, without enabling format-on-save globally', () => {
+    const extension = vscode.extensions.getExtension('gungnir.vscode-gungnir');
+    assert.ok(extension);
+    const defaults = extension.packageJSON.contributes.configurationDefaults;
+    assert.equal(defaults['[gungnir]']['editor.defaultFormatter'], 'gungnir.vscode-gungnir');
+    assert.equal(defaults['[gungnir]']['editor.formatOnSave'], undefined);
+    const enabled = extension.packageJSON.contributes.configuration.properties[
+      'gungnir.formatting.enabled'
+    ];
+    assert.equal(enabled.default, true);
+  });
+
   test('contributes SDK detection settings', () => {
     const extension = vscode.extensions.getExtension('gungnir.vscode-gungnir');
     assert.ok(extension);
@@ -227,6 +239,65 @@ suite('Gungnir extension', () => {
         'vscode.executeHoverProvider', plain.uri, new vscode.Position(0, 2),
       );
       assert.ok(!unrelated?.length, 'Must not attach Gungnir hover to plaintext');
+
+      // The VS Code formatting command must invoke the real LanguageClient
+      // provider, preserve edits, and avoid rewriting already formatted code.
+      const formattedUri = vscode.Uri.joinPath(project.uri, 'app/controllers/FormatTest.gnr');
+      const raw = 'controller HomeController{Response index(){return text("Hello from Gungnir");}}';
+      const expected = [
+        'controller HomeController {',
+        '    Response index() {',
+        '        return text("Hello from Gungnir");',
+        '    }',
+        '}',
+        '',
+      ].join('\\n');
+      await vscode.workspace.fs.writeFile(formattedUri, Buffer.from(raw, 'utf8'));
+      const originalFormatEnabled = settings.inspect<boolean>('formatting.enabled')?.globalValue;
+      const languageConfig = vscode.workspace.getConfiguration('[gungnir]');
+      const oldFormatOnSave = languageConfig.inspect<boolean>('editor.formatOnSave')?.workspaceValue;
+      try {
+        const formatDoc = await vscode.workspace.openTextDocument(formattedUri);
+        await vscode.window.showTextDocument(formatDoc);
+        // Native LSP formatting emits edits rather than writing the file.
+        const edits = await vscode.commands.executeCommand<vscode.TextEdit[]>(
+          'vscode.executeFormatDocumentProvider', formattedUri,
+          { tabSize: 4, insertSpaces: true },
+        );
+        assert.ok(edits?.length, 'Expected native formatting edits from gungnir lsp');
+        assert.equal(edits[0].newText, expected);
+        const apply = new vscode.WorkspaceEdit();
+        apply.set(formattedUri, edits);
+        assert.equal(await vscode.workspace.applyEdit(apply), true);
+        assert.equal(formatDoc.getText(), expected);
+        const second = await vscode.commands.executeCommand<vscode.TextEdit[]>(
+          'vscode.executeFormatDocumentProvider', formattedUri,
+          { tabSize: 4, insertSpaces: true },
+        );
+        assert.equal(second?.length ?? 0, 0, 'Formatting must be idempotent');
+        await settings.update('formatting.enabled', false, vscode.ConfigurationTarget.Global);
+        const disabled = await vscode.commands.executeCommand<vscode.TextEdit[]>(
+          'vscode.executeFormatDocumentProvider', formattedUri,
+          { tabSize: 4, insertSpaces: true },
+        );
+        assert.equal(disabled?.length ?? 0, 0, 'Disabled formatting must return no edits');
+        await settings.update('formatting.enabled', true, vscode.ConfigurationTarget.Global);
+        // Test VS Code's own opt-in format-on-save, never a competing save hook.
+        await languageConfig.update('editor.formatOnSave', true, vscode.ConfigurationTarget.Workspace);
+        const unformat = new vscode.WorkspaceEdit();
+        unformat.replace(formattedUri, new vscode.Range(
+          formatDoc.positionAt(0), formatDoc.positionAt(formatDoc.getText().length),
+        ), raw);
+        assert.equal(await vscode.workspace.applyEdit(unformat), true);
+        assert.equal(formatDoc.getText(), raw);
+        assert.equal(await formatDoc.save(), true);
+        const saved = Buffer.from(await vscode.workspace.fs.readFile(formattedUri)).toString('utf8');
+        assert.equal(saved, expected, 'Format on Save should apply the native formatter');
+      } finally {
+        await settings.update('formatting.enabled', originalFormatEnabled, vscode.ConfigurationTarget.Global);
+        await languageConfig.update('editor.formatOnSave', oldFormatOnSave, vscode.ConfigurationTarget.Workspace);
+        await vscode.workspace.fs.delete(formattedUri, { useTrash: false });
+      }
 
       const stopped = await vscode.commands.executeCommand<{ state: string }>(
         'gungnir.stopLanguageServer',

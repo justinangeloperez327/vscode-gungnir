@@ -80,6 +80,30 @@ function controllerSource() {
   return [...documents.values()].find((doc) =>
     doc.uri.endsWith('/app/controllers/HomeController.gnr'));
 }
+// This fixture models the native formatter's LSP contract for a small,
+// deterministic example. It is not a Gungnir parser or production formatter.
+function formatDocument(params) {
+  const doc = documents.get(params.textDocument.uri);
+  if (!doc) return [];
+  const original = doc.text;
+  const input = 'controller HomeController{Response index(){return text("Hello from Gungnir");}}';
+  const output = 'controller HomeController {\n'
+    + '    Response index() {\n'
+    + '        return text("Hello from Gungnir");\n'
+    + '    }\n'
+    + '}\n';
+  if (original !== input && original !== output) return [];
+  if (original === output) return [];
+  const rows = original.split('\n');
+  return [{
+    range: {
+      start: { line: 0, character: 0 },
+      end: { line: rows.length - 1, character: rows.at(-1).length },
+    },
+    newText: output,
+  }];
+}
+
 function semanticResponse(method, params) {
   const doc = documents.get(params.textDocument.uri);
   if (!doc) return null;
@@ -144,6 +168,7 @@ process.stdin.on('data', (chunk) => {
           definitionProvider: true,
           completionProvider: { resolveProvider: false },
           documentSymbolProvider: true,
+          documentFormattingProvider: true,
         },
         serverInfo: { name: 'gungnir-test-double', version: '1.0.2' },
       });
@@ -171,6 +196,8 @@ process.stdin.on('data', (chunk) => {
       const uri = params.textDocument.uri;
       documents.delete(uri);
       diagnostic(uri, null, []);
+    } else if (msg.method === 'textDocument/formatting') {
+      if (msg.id !== undefined) reply(msg.id, formatDocument(params));
     } else if (msg.method === 'textDocument/hover'
       || msg.method === 'textDocument/definition'
       || msg.method === 'textDocument/completion'
