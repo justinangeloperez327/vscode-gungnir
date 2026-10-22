@@ -41,7 +41,11 @@
     "onCommand:gungnir.makeMail",
     "onCommand:gungnir.makeListener",
     "onCommand:gungnir.makePolicy",
-    "onCommand:gungnir.makeNotification"
+    "onCommand:gungnir.makeNotification",
+    "onCommand:gungnir.build",
+    "onCommand:gungnir.run",
+    "onCommand:gungnir.dev",
+    "onCommand:gungnir.stopTask"
   ],
   "contributes": {
     "commands": [
@@ -144,6 +148,26 @@
         "command": "gungnir.makeNotification",
         "title": "Gungnir: Generate Notification",
         "category": "Gungnir"
+      },
+      {
+        "command": "gungnir.build",
+        "title": "Gungnir: Build Project",
+        "category": "Gungnir"
+      },
+      {
+        "command": "gungnir.run",
+        "title": "Gungnir: Run Project",
+        "category": "Gungnir"
+      },
+      {
+        "command": "gungnir.dev",
+        "title": "Gungnir: Start Dev Server",
+        "category": "Gungnir"
+      },
+      {
+        "command": "gungnir.stopTask",
+        "title": "Gungnir: Stop Running Task",
+        "category": "Gungnir"
       }
     ],
     "languages": [
@@ -223,6 +247,109 @@
       "[gungnir]": {
         "editor.defaultFormatter": "gungnir.vscode-gungnir"
       }
+    },
+    "taskDefinitions": [
+      {
+        "type": "gungnir",
+        "required": [
+          "operation"
+        ],
+        "properties": {
+          "operation": {
+            "type": "string",
+            "enum": [
+              "build",
+              "run",
+              "dev"
+            ],
+            "description": "Native Gungnir CLI workflow."
+          },
+          "release": {
+            "type": "boolean",
+            "description": "Use --release for build/run. Not allowed for dev."
+          }
+        }
+      }
+    ],
+    "problemMatchers": [
+      {
+        "name": "gungnirCompiler",
+        "label": "Gungnir compiler output",
+        "owner": "gungnir-build",
+        "source": "gungnir",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}"
+        ],
+        "pattern": {
+          "regexp": "^(.+):(\\d+):(\\d+):\\s+(error|warning)(?:\\[([^\\]]+)\\])?:\\s+(.+)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "code": 5,
+          "message": 6
+        }
+      },
+      {
+        "name": "gungnirStructured",
+        "label": "Gungnir structured validation",
+        "owner": "gungnir-build",
+        "source": "gungnir",
+        "severity": "error",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}"
+        ],
+        "pattern": {
+          "regexp": "^(.+):(\\d+):(\\d+)\\s+\\[([^\\]]+)\\]:\\s+(.+)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "code": 4,
+          "message": 5
+        }
+      },
+      {
+        "name": "gungnirDev",
+        "label": "Gungnir development watcher",
+        "owner": "gungnir-build",
+        "source": "gungnir",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}"
+        ],
+        "pattern": {
+          "regexp": "^(.+):(\\d+):(\\d+):\\s+(error|warning)(?:\\[([^\\]]+)\\])?:\\s+(.+)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "code": 5,
+          "message": 6
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^gungnir dev: building",
+          "endsPattern": "^(?:gungnir dev: running|gungnir dev: build failed|Waiting for changes)"
+        }
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "gungnir.build",
+          "when": "isWorkspaceTrusted"
+        },
+        {
+          "command": "gungnir.run",
+          "when": "isWorkspaceTrusted"
+        },
+        {
+          "command": "gungnir.dev",
+          "when": "isWorkspaceTrusted"
+        }
+      ]
     }
   },
   "scripts": {

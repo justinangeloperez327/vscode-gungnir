@@ -2,6 +2,15 @@
 
 ## 0.1.0 — Unreleased
 
+### Group 10
+
+- Add native `gungnir build`, `gungnir run`, `gungnir dev` commands and build/run `--release` task variants.
+- Add trusted, workspace-aware VS Code task provider with `ProcessExecution` and integrated terminal output.
+- Match compiler/structured-source diagnostics into Problems via native task problem matchers.
+- Add explicit Stop Task action and guard against duplicate dev watchers per workspace.
+- Add CI unit tests and extension-host integration coverage of task discovery, execution, exit codes and termination.
+
+
 ### Group 9
 
 - Add native Gungnir project and 11 declaration generator commands, including a searchable Quick Pick.

@@ -5,9 +5,9 @@
 The VS Code extension for the [Gungnir](https://github.com/justinangeloperez327/gungnir)
 expressive C++23 web framework and `.gnr` language.
 
-> **Group 9 / developer preview:** Syntax highlighting, snippets, SDK detection,
-> diagnostics, native IntelliSense, native formatting, and CLI-backed project and
-> declaration generators. Build/run tasks and advanced multi-root support are planned.
+> **Group 10 / developer preview:** Syntax highlighting, native IntelliSense,
+> formatting, CLI-backed generators, and build/run/dev tasks are available.
+> Advanced multi-root language server support remains planned.
 
 ## Requirements
 
@@ -167,6 +167,58 @@ Policy / Notification** commands.
 The extension uses native Gungnir templates rather than maintaining a second
 set of generated language files. For details, see the
 [CLI code generation guide](https://github.com/justinangeloperez327/gungnir/blob/main/docs/cli-codegen.md).
+
+## Build, run and development tasks
+
+In a trusted local Gungnir project, use the Command Palette:
+
+- **Gungnir: Build Project** — `gungnir build`
+- **Gungnir: Run Project** — `gungnir run`
+- **Gungnir: Start Dev Server** — `gungnir dev`; the native watcher rebuilds and
+  restarts the application after supported source changes
+- **Gungnir: Stop Running Task** — terminate one running Gungnir task
+
+Use **Terminal → Run Task** to access **Gungnir: Build**, **Build (Release)**,
+**Run**, **Run (Release)** and **Dev** tasks, with a task for each detected project
+folder. The task provider requires an installed Gungnir CLI, Workspace Trust and a
+local `.gungnir-project` marker. All tasks use native VS Code
+`ProcessExecution` with argument arrays, never shell interpolated commands.
+
+Output appears in VS Code's integrated task terminal. Compiler and structured
+validation errors that include a source path, line and column are linked through
+Gungnir problem matchers in the **Problems** panel. Native C++ toolchain output
+continues to appear in the terminal, and additional compiler diagnostics can be
+provided by the installed toolchain. Exit codes are preserved by VS Code tasks.
+
+**Stopping and safety:** The Stop command only terminates Gungnir task
+executions. VS Code also supports **Terminal → Run Task → Terminate Task**.
+The extension refuses duplicate `dev` watchers in the same workspace.
+No build, application or watcher starts automatically at activation.
+Terminating a process task is platform-dependent; the native Gungnir watcher
+owns its application subprocess, and shutdown behavior should be validated on
+Windows with the real SDK.
+
+You can define a task in `.vscode/tasks.json` to bind a shortcut or make it
+part of your existing workflow:
+
+```json
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build Gungnir Release",
+      "type": "gungnir",
+      "operation": "build",
+      "release": true,
+      "group": "build"
+    }
+  ]
+}
+```
+
+The extension is the task provider. You do not need to hard-code executable
+paths in `tasks.json`; configure `gungnir.executablePath` or
+`gungnir.sdkRoot` in VS Code settings.
 
 ## Native formatting
 

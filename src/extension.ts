@@ -7,6 +7,8 @@ import { createLanguageServer } from './client/server';
 import { decideServerStart } from './client/selection';
 import { GENERATORS, validateName, validateDependency, type GeneratorKind } from './core/generators';
 import { generateDeclaration, createProject } from './core/native-generator';
+import { GungnirTaskProvider, isGungnirTask } from './core/workflow-tasks';
+import { workflowPlan, type WorkflowOperation } from './core/workflow';
 
 const configSection = 'gungnir';
 const statusCommand = 'gungnir.checkInstallation';
@@ -26,6 +28,12 @@ export function activate(context: vscode.ExtensionContext): void {
   indicator.command = statusCommand;
   const lspOutput = vscode.window.createOutputChannel('Gungnir Language Server', { log: true });
   const lifecycle = new ClientLifecycle();
+  const taskProvider = new GungnirTaskProvider(output);
+  context.subscriptions.push(vscode.tasks.registerTaskProvider('gungnir', taskProvider));
+  context.subscriptions.push({ dispose: () => { void taskProvider.dispose(); } });
+  context.subscriptions.push(vscode.tasks.onDidEndTaskProcess((event) => {
+    if (isGungnirTask(event.execution)) taskProvider.onTaskFinished(event.execution, event.exitCode);
+  }));
   context.subscriptions.push(output, indicator, lspOutput);
   context.subscriptions.push({ dispose: () => { void lifecycle.dispose(); } });
 
@@ -347,7 +355,56 @@ export function activate(context: vscode.ExtensionContext): void {
     return chosen ? generateKind(chosen.generatorKind) : undefined;
   }
 
+  async function runWorkflow(operation: WorkflowOperation, release = false): Promise<vscode.TaskExecution | undefined> {
+    if (!vscode.workspace.isTrusted) {
+      void vscode.window.showWarningMessage('Trust this workspace before running Gungnir tasks.');
+      return undefined;
+    }
+    try {
+      // Validate all operation/release combinations, including programmatic command calls.
+      const plan = workflowPlan(operation, release);
+      const folder = await chooseProjectFolder();
+      if (!folder) return undefined;
+      const execution = await taskProvider.start(folder, plan.operation, plan.release);
+      return execution;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      output.appendLine('Gungnir workflow failed: ' + message);
+      void vscode.window.showErrorMessage('Gungnir workflow: ' + message);
+      return undefined;
+    }
+  }
+
+  async function stopWorkflow(): Promise<number> {
+    const running = vscode.tasks.taskExecutions.filter((execution) => isGungnirTask(execution));
+    if (!running.length) {
+      void vscode.window.showInformationMessage('No Gungnir build, run or dev tasks are running.');
+      return 0;
+    }
+    let selected: vscode.TaskExecution | undefined;
+    if (running.length === 1) selected = running[0];
+    else {
+      const pick = await vscode.window.showQuickPick(
+        running.map((execution) => ({
+          label: execution.task.name,
+          description: typeof execution.task.scope === 'object'
+            ? execution.task.scope.uri.fsPath : undefined,
+          execution,
+        })),
+        { title: 'Stop a running Gungnir task' },
+      );
+      selected = pick?.execution;
+    }
+    if (!selected) return 0;
+    await vscode.tasks.terminateTask(selected);
+    return 1;
+  }
+
   context.subscriptions.push(
+    vscode.commands.registerCommand('gungnir.build', (release?: boolean) => runWorkflow('build', release === true)),
+    vscode.commands.registerCommand('gungnir.run', (release?: boolean) => runWorkflow('run', release === true)),
+    vscode.commands.registerCommand('gungnir.dev', () => runWorkflow('dev')),
+    vscode.commands.registerCommand('gungnir.stopTask', stopWorkflow),
     vscode.commands.registerCommand('gungnir.newProject', newProject),
     vscode.commands.registerCommand('gungnir.generateDeclaration', generateWithPicker),
     ...GENERATORS.map((generator) => vscode.commands.registerCommand(

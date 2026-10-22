@@ -365,4 +365,89 @@ suite('Gungnir extension', () => {
     }
   });
 
+
+  test('provides Gungnir tasks and verifies build execution and dev termination', async () => {
+    if (process.platform !== 'linux' || !vscode.workspace.isTrusted) return;
+    const project = vscode.workspace.workspaceFolders?.[0];
+    const extension = vscode.extensions.getExtension('gungnir.vscode-gungnir');
+    assert.ok(project);
+    assert.ok(extension);
+    const cli = vscode.Uri.joinPath(extension.extensionUri, 'test-fixtures', 'mock-workflow.cjs');
+    const config = vscode.workspace.getConfiguration('gungnir');
+    const oldCli = config.inspect<string>('executablePath')?.globalValue;
+    const oldLsp = config.inspect<boolean>('languageServer.enabled')?.globalValue;
+    try {
+      await config.update('languageServer.enabled', false, vscode.ConfigurationTarget.Global);
+      await config.update('executablePath', cli.fsPath, vscode.ConfigurationTarget.Global);
+      const tasks = await vscode.tasks.fetchTasks({ type: 'gungnir' });
+      const own = tasks.filter((task) =>
+        typeof task.scope === 'object' && task.scope.uri.toString() === project.uri.toString(),
+      );
+      assert.equal(own.length, 5, 'Expected build, build-release, run, run-release and dev tasks');
+      for (const task of own) {
+        assert.ok(task.execution instanceof vscode.ProcessExecution, 'Tasks must never execute through a shell');
+        assert.equal(task.execution.process, cli.fsPath);
+      }
+      const release = own.find((task) =>
+        task.definition.operation === 'build' && task.definition.release === true);
+      assert.ok(release);
+      assert.deepEqual((release.execution as vscode.ProcessExecution).args, ['build', '--release']);
+
+      const endBuild = new Promise<vscode.TaskProcessEndEvent>((resolve, reject) => {
+        const timer = setTimeout(() => { sub.dispose(); reject(new Error('Build task timeout')); }, 12000);
+        const sub = vscode.tasks.onDidEndTaskProcess((event) => {
+          if (event.execution.task.definition.type === 'gungnir'
+            && event.execution.task.definition.operation === 'build'
+            && event.execution.task.definition.release !== true) {
+            clearTimeout(timer);
+            sub.dispose();
+            resolve(event);
+          }
+        });
+      });
+      const launched = await vscode.commands.executeCommand<vscode.TaskExecution>('gungnir.build');
+      assert.ok(launched, 'Build command should create a task execution');
+      assert.equal(launched.task.definition.operation, 'build');
+      const finished = await endBuild;
+      assert.equal(finished.exitCode, 0, 'Native build task should preserve process exit code');
+
+      const dev = await vscode.commands.executeCommand<vscode.TaskExecution>('gungnir.dev');
+      assert.ok(dev, 'Dev watcher should start on explicit command');
+      assert.equal(dev.task.isBackground, true);
+      const duplicate = await vscode.commands.executeCommand<vscode.TaskExecution>('gungnir.dev');
+      assert.equal(duplicate, dev, 'An existing dev watcher should be reused for the workspace');
+      assert.ok(vscode.tasks.taskExecutions.some((execution) => execution === dev));
+
+      const terminated = await vscode.commands.executeCommand<number>('gungnir.stopTask');
+      assert.equal(terminated, 1, 'Stop command must only terminate the Gungnir workflow');
+      const deadline = Date.now() + 8000;
+      while (vscode.tasks.taskExecutions.some((execution) => execution === dev)
+        && Date.now() < deadline) {
+        await new Promise((resolve) => setTimeout(resolve, 60));
+      }
+      assert.ok(!vscode.tasks.taskExecutions.some((execution) => execution === dev),
+        'Terminated dev watcher must be removed from running task executions');
+    } finally {
+      for (const task of vscode.tasks.taskExecutions) {
+        if (task.task.definition.type === 'gungnir') await vscode.tasks.terminateTask(task);
+      }
+      await config.update('executablePath', oldCli, vscode.ConfigurationTarget.Global);
+      await config.update('languageServer.enabled', oldLsp, vscode.ConfigurationTarget.Global);
+    }
+  });
+
+  test('registers native Gungnir task definitions and problem matchers', () => {
+    const extension = vscode.extensions.getExtension('gungnir.vscode-gungnir');
+    assert.ok(extension);
+    const contributes = extension.packageJSON.contributes;
+    assert.ok(contributes.taskDefinitions.some((definition: { type: string }) => definition.type === 'gungnir'));
+    for (const matcher of ['gungnirCompiler', 'gungnirStructured', 'gungnirDev']) {
+      assert.ok(contributes.problemMatchers.some((item: { name: string }) => item.name === matcher));
+    }
+    const commands = await vscode.commands.getCommands(true);
+    for (const command of ['gungnir.build', 'gungnir.run', 'gungnir.dev', 'gungnir.stopTask']) {
+      assert.ok(commands.includes(command), 'Missing command: ' + command);
+    }
+  });
+
 });
