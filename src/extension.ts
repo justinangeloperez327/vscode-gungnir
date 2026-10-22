@@ -340,11 +340,11 @@ export function activate(context: vscode.ExtensionContext): void {
         label: generator.label,
         description: generator.structured ? 'Structured project' : 'Legacy and structured',
         detail: 'gungnir make:' + generator.kind,
-        kind: generator.kind,
+        generatorKind: generator.kind,
       })),
       { title: 'Generate a Gungnir declaration' },
     );
-    return chosen ? generateKind(chosen.kind) : undefined;
+    return chosen ? generateKind(chosen.generatorKind) : undefined;
   }
 
   context.subscriptions.push(
