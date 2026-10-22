@@ -1,5 +1,5 @@
 import { execFile } from 'node:child_process';
-import { lstat, mkdir, readFile, realpath, stat } from 'node:fs/promises';
+import { lstat, readFile, realpath, stat } from 'node:fs/promises';
 import * as path from 'node:path';
 import { promisify } from 'node:util';
 import {
