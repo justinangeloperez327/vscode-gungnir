@@ -318,4 +318,51 @@ suite('Gungnir extension', () => {
       await settings.update('languageServer.enabled', originalEnabled, vscode.ConfigurationTarget.Global);
     }
   });
+  test('exposes project and declaration generator commands', async () => {
+    const commands = await vscode.commands.getCommands(true);
+    for (const id of [
+      'gungnir.newProject', 'gungnir.generateDeclaration',
+      'gungnir.makeModel', 'gungnir.makeController', 'gungnir.makeMiddleware',
+      'gungnir.makeMigration', 'gungnir.makeRequest', 'gungnir.makeJob',
+      'gungnir.makeEvent', 'gungnir.makeMail', 'gungnir.makeListener',
+      'gungnir.makePolicy', 'gungnir.makeNotification',
+    ]) {
+      assert.ok(commands.includes(id), 'Missing generator command ' + id);
+    }
+  });
+
+  test('generates a model using a verified native CLI executable without overwrites', async () => {
+    if (process.platform !== 'linux' || !vscode.workspace.isTrusted) return;
+    const folder = vscode.workspace.workspaceFolders?.[0];
+    const extension = vscode.extensions.getExtension('gungnir.vscode-gungnir');
+    assert.ok(folder);
+    assert.ok(extension);
+    const fake = vscode.Uri.joinPath(extension.extensionUri, 'test-fixtures', 'mock-generator.cjs');
+    const config = vscode.workspace.getConfiguration('gungnir');
+    const oldExecutable = config.inspect<string>('executablePath')?.globalValue;
+    const oldLsp = config.inspect<boolean>('languageServer.enabled')?.globalValue;
+    const name = 'GroupNineModelTest';
+    const created = vscode.Uri.joinPath(folder.uri, 'app', 'models', name + '.gnr');
+    try {
+      await config.update('languageServer.enabled', false, vscode.ConfigurationTarget.Global);
+      await config.update('executablePath', fake.fsPath, vscode.ConfigurationTarget.Global);
+      const result = await vscode.commands.executeCommand<{ source: string; stdout: string }>(
+        'gungnir.makeModel', name,
+      );
+      assert.ok(result, 'Model generator should return a file reference');
+      assert.equal(result.source, created.fsPath);
+      assert.match(result.stdout, /Created app\/models\/GroupNineModelTest.gnr/);
+      const code = Buffer.from(await vscode.workspace.fs.readFile(created)).toString('utf8');
+      assert.equal(code, 'model GroupNineModelTest { string name; }\n');
+      const retry = await vscode.commands.executeCommand('gungnir.makeModel', name);
+      assert.equal(retry, undefined, 'Generator must not overwrite an existing model');
+      const preserved = Buffer.from(await vscode.workspace.fs.readFile(created)).toString('utf8');
+      assert.equal(preserved, code);
+    } finally {
+      try { await vscode.workspace.fs.delete(created); } catch { /* already absent */ }
+      await config.update('executablePath', oldExecutable, vscode.ConfigurationTarget.Global);
+      await config.update('languageServer.enabled', oldLsp, vscode.ConfigurationTarget.Global);
+    }
+  });
+
 });
