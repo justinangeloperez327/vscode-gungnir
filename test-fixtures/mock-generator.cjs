@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 'use strict';
+/* eslint-disable @typescript-eslint/no-require-imports -- executable Node CJS fixture */
 // Native CLI test double. Only for extension-host regression testing.
 const fs = require('node:fs');
 const path = require('node:path');
