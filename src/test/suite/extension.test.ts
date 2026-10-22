@@ -286,12 +286,20 @@ suite('Gungnir extension', () => {
         await settings.update('formatting.enabled', true, vscode.ConfigurationTarget.Global);
         // Test VS Code's own opt-in format-on-save, never a competing save hook.
         await languageConfig.update('formatOnSave', true, vscode.ConfigurationTarget.Workspace);
+        const scoped = vscode.workspace.getConfiguration('editor', {
+          uri: formattedUri, languageId: 'gungnir',
+        });
+        assert.equal(scoped.get<boolean>('formatOnSave'), true,
+          'Language-specific editor.formatOnSave must be active');
+        // The editor save participant observes the configuration asynchronously.
+        await new Promise((resolve) => setTimeout(resolve, 250));
         const unformat = new vscode.WorkspaceEdit();
         unformat.replace(formattedUri, new vscode.Range(
           formatDoc.positionAt(0), formatDoc.positionAt(formatDoc.getText().length),
         ), raw);
         assert.equal(await vscode.workspace.applyEdit(unformat), true);
         assert.equal(formatDoc.getText(), raw);
+        assert.equal(vscode.window.activeTextEditor?.document.uri.toString(), formattedUri.toString());
         assert.equal(await formatDoc.save(), true);
         const saved = Buffer.from(await vscode.workspace.fs.readFile(formattedUri)).toString('utf8');
         assert.equal(saved, expected, 'Format on Save should apply the native formatter');

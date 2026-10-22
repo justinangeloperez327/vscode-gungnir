@@ -243,7 +243,15 @@ export function activate(context: vscode.ExtensionContext): void {
       else void stopLanguageServer();
     }),
     vscode.workspace.onDidChangeConfiguration((event) => {
-      if (event.affectsConfiguration(configSection)) {
+      // Formatting preferences are read per request by the LSP middleware.
+      // They must never tear down the server during an editor save.
+      if ([
+        'gungnir.executablePath',
+        'gungnir.sdkRoot',
+        'gungnir.toolchain.autoDetect',
+        'gungnir.toolchain.timeoutMs',
+        'gungnir.languageServer.enabled',
+      ].some((section) => event.affectsConfiguration(section))) {
         if (autoStart()) void reconcile(true);
         else { ++lspGeneration; void lifecycle.stop(); }
       }
