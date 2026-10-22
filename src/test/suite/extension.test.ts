@@ -429,14 +429,14 @@ suite('Gungnir extension', () => {
         'Terminated dev watcher must be removed from running task executions');
     } finally {
       for (const task of vscode.tasks.taskExecutions) {
-        if (task.task.definition.type === 'gungnir') await vscode.tasks.terminateTask(task);
+        if (task.task.definition.type === 'gungnir') task.terminate();
       }
       await config.update('executablePath', oldCli, vscode.ConfigurationTarget.Global);
       await config.update('languageServer.enabled', oldLsp, vscode.ConfigurationTarget.Global);
     }
   });
 
-  test('registers native Gungnir task definitions and problem matchers', () => {
+  test('registers native Gungnir task definitions and problem matchers', async () => {
     const extension = vscode.extensions.getExtension('gungnir.vscode-gungnir');
     assert.ok(extension);
     const contributes = extension.packageJSON.contributes;

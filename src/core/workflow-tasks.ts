@@ -144,7 +144,7 @@ export class GungnirTaskProvider implements vscode.TaskProvider {
     const running = vscode.tasks.taskExecutions.filter((item) => isGungnirTask(item)
       && (!folder || (typeof item.task.scope === 'object'
         && item.task.scope.uri.toString() === folder.uri.toString())));
-    for (const execution of running) await vscode.tasks.terminateTask(execution);
+    for (const execution of running) execution.terminate();
     return running.length;
   }
 
@@ -158,7 +158,7 @@ export class GungnirTaskProvider implements vscode.TaskProvider {
   async dispose(): Promise<void> {
     // Kill only workflows launched by this extension, not all user-defined tasks.
     for (const execution of this.owned) {
-      try { await vscode.tasks.terminateTask(execution); } catch { /* already exited */ }
+      try { execution.terminate(); } catch { /* already exited */ }
     }
     this.owned.clear();
   }

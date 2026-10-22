@@ -396,7 +396,7 @@ export function activate(context: vscode.ExtensionContext): void {
       selected = pick?.execution;
     }
     if (!selected) return 0;
-    await vscode.tasks.terminateTask(selected);
+    selected.terminate();
     return 1;
   }
 
