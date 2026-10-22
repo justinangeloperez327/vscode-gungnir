@@ -5,10 +5,10 @@
 The VS Code extension for the [Gungnir](https://github.com/justinangeloperez327/gungnir)
 expressive C++23 web framework and `.gnr` language.
 
-> **Group 5 / developer preview:** Syntax highlighting, 26 snippets, SDK detection,
-> and a native `gungnir lsp` client now work in trusted local workspaces. The
-> language server's own capabilities are forwarded through VS Code; detailed
-> diagnostics/semantic QA, multi-root and framework commands follow in later groups.
+> **Group 6 / developer preview:** Syntax highlighting, 26 snippets, SDK detection,
+> native `gungnir lsp` integration, and version-aware compiler diagnostics are
+> available in trusted workspaces. Semantic navigation verification, multi-root
+> support and framework commands remain on the roadmap.
 
 ## Requirements
 
@@ -109,9 +109,26 @@ A `Gungnir Language Server` output channel shows startup failures. Server
 stderr is never written to the LSP stdout stream.
 
 **Current limitation:** one active workspace root. Multi-root/per-folder clients,
-crash backoff, diagnostics regression coverage and full semantic behavior are
-subsequent groups. Opening a `.gnr` file activates the extension; an unsaved
+crash backoff and deeper semantic behavior are subsequent groups. Opening a `.gnr` file activates the extension; an unsaved
 document alone does not spawn a server.
+
+## Compiler diagnostics and synchronization
+
+When a native Gungnir SDK is installed, the language client forwards normal
+`textDocument/didOpen`, incremental `didChange`, `didSave` and `didClose`
+notifications for `.gnr` files within the selected trusted workspace.
+
+The native `gungnir lsp` server publishes errors and warnings to VS Code's
+**Problems** panel and editor squiggles. The extension filters versioned
+`textDocument/publishDiagnostics` notifications at the LSP stdio frame boundary:
+results older than the editor's current version cannot replace newer diagnostics.
+Empty diagnostic arrays clear resolved problems, and closed documents cannot
+receive new nonempty errors. Server notifications without a version still follow
+standard language-client behavior; a legacy unversioned server cannot provide
+strict freshness guarantees. No additional compiler process is started per edit.
+
+Regression tests cover fragmented UTF-8 protocol packets, out-of-order versions,
+editing and clearing errors, and a simulated stale publish after a correction.
 
 ## Integration tests
 

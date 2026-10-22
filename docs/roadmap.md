@@ -7,7 +7,7 @@
 | 3 | Advanced editor behaviors, indentation/folding refinements and snippets | Complete |
 | 4 | Detect locally installed Gungnir CLI and SDK | Complete |
 | 5 | Connect `vscode-languageclient` to `gungnir lsp` | Complete |
-| 6 | Diagnostics and document synchronization | Planned |
+| 6 | Versioned diagnostics, incremental synchronization and regression tests | Complete |
 | 7 | Existing native hover, definitions, completions and symbols | Planned |
 | 8 | Formatter and editor settings | Planned |
 | 9 | Project and declaration generators | Planned |

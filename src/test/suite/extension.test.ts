@@ -116,11 +116,47 @@ suite('Gungnir extension', () => {
     try {
       await settings.update('languageServer.enabled', true, vscode.ConfigurationTarget.Global);
       await settings.update('executablePath', fake.fsPath, vscode.ConfigurationTarget.Global);
-      await vscode.workspace.openTextDocument(vscode.Uri.joinPath(project.uri, 'app/controllers/HomeController.gnr'));
+      const document: vscode.TextDocument = await vscode.workspace.openTextDocument(
+        vscode.Uri.joinPath(project.uri, 'app/controllers/HomeController.gnr'),
+      );
       const status = await vscode.commands.executeCommand<{ state: string; detail: string }>(
         'gungnir.startLanguageServer',
       );
       assert.equal(status.state, 'running', status.detail);
+      // Simulate editing a Gungnir document. The mock server responds only to
+      // didOpen/didChange/didSave, proving the standard LSP synchronization path.
+      const waitFor = async (check: () => boolean, label: string): Promise<void> => {
+        const deadline = Date.now() + 7000;
+        while (!check() && Date.now() < deadline) {
+          await new Promise((resolve) => setTimeout(resolve, 40));
+        }
+        assert.ok(check(), label);
+      };
+      const mark = new vscode.WorkspaceEdit();
+      mark.insert(document.uri, document.positionAt(document.getText().length), '\n// BROKEN\n');
+      assert.equal(await vscode.workspace.applyEdit(mark), true);
+      await waitFor(
+        () => vscode.languages.getDiagnostics(document.uri).some((d) => d.code === 'GNR-GROUP6'),
+        'Expected Gungnir compiler diagnostics from didChange',
+      );
+      const repair = new vscode.WorkspaceEdit();
+      const currentText = document.getText();
+      const at = currentText.indexOf('BROKEN');
+      assert.ok(at >= 0);
+      repair.replace(
+        document.uri, new vscode.Range(document.positionAt(at), document.positionAt(at + 6)),
+        'FIXED',
+      );
+      assert.equal(await vscode.workspace.applyEdit(repair), true);
+      await waitFor(
+        () => vscode.languages.getDiagnostics(document.uri).length === 0,
+        'Expected corrected document to clear diagnostics',
+      );
+      // The fixture publishes an obsolete version after the new clear. It must
+      // not revive a stale error in the Problems panel.
+      await new Promise((resolve) => setTimeout(resolve, 220));
+      assert.deepEqual(vscode.languages.getDiagnostics(document.uri), [],
+        'A stale diagnostic must be dropped at the LSP transport boundary');
       const stopped = await vscode.commands.executeCommand<{ state: string }>(
         'gungnir.stopLanguageServer',
       );

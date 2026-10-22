@@ -2,6 +2,14 @@
 
 ## 0.1.0 — Unreleased
 
+### Group 6
+
+- Preserve the native Gungnir server's versioned publish-diagnostics semantics before VS Code language-client conversion.
+- Reject stale/foreign/closed-document diagnostics while retaining standard stdio LSP framing and incremental document edits.
+- Add real VS Code diagnostic regression tests using a versioned server fixture, including rapid corrections and delayed old notifications.
+- Confirm the native server's diagnostics are surfaced in the Problems panel without a second parser.
+
+
 ### Group 5
 
 - Add official VS Code Language Client integration for native `gungnir lsp` over stdio.

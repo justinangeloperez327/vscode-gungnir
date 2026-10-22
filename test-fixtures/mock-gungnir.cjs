@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 'use strict';
+// Protocol-compliant test double: incremental text sync, versioned diagnostics,
+// clean shutdown and an intentionally stale publish after a quick correction.
 if (process.argv[2] === '--version') {
   process.stdout.write('Gungnir 1.0.2\n');
   process.exit(0);
@@ -7,10 +9,51 @@ if (process.argv[2] === '--version') {
 if (process.argv[2] !== 'lsp') process.exit(2);
 let buffer = Buffer.alloc(0);
 let shutdown = false;
-function respond(id, result) {
-  const body = Buffer.from(JSON.stringify({ jsonrpc: '2.0', id, result }), 'utf8');
+const documents = new Map();
+
+function send(message) {
+  const body = Buffer.from(JSON.stringify({ jsonrpc: '2.0', ...message }), 'utf8');
   process.stdout.write('Content-Length: ' + body.byteLength + '\r\n\r\n');
   process.stdout.write(body);
+}
+function reply(id, result) { send({ id, result }); }
+function diagnostic(uri, version, errors = []) {
+  send({ method: 'textDocument/publishDiagnostics', params: {
+    uri, version, diagnostics: errors.map((message) => ({
+      range: {
+        start: { line: 0, character: 0 },
+        end: { line: 0, character: 1 },
+      },
+      severity: 1,
+      source: 'gungnir',
+      code: message.includes('stale') ? 'GNR-STALE' : 'GNR-GROUP6',
+      message,
+    })),
+  } });
+}
+function analyze(doc) {
+  diagnostic(doc.uri, doc.version, doc.text.includes('BROKEN')
+    ? ['Gungnir test diagnostic: BROKEN'] : []);
+}
+function point(text, position) {
+  let start = 0;
+  for (let i = 0; i < position.line; i++) {
+    const end = text.indexOf('\n', start);
+    if (end < 0) return text.length;
+    start = end + 1;
+  }
+  return Math.min(text.length, start + position.character);
+}
+function change(doc, edits) {
+  for (const edit of edits) {
+    if (!edit.range) {
+      doc.text = edit.text;
+    } else {
+      const start = point(doc.text, edit.range.start);
+      const end = point(doc.text, edit.range.end);
+      doc.text = doc.text.slice(0, start) + edit.text + doc.text.slice(end);
+    }
+  }
 }
 process.stdin.on('data', (chunk) => {
   buffer = Buffer.concat([buffer, chunk]);
@@ -25,18 +68,45 @@ process.stdin.on('data', (chunk) => {
     const body = buffer.subarray(boundary + 4, boundary + 4 + size).toString('utf8');
     buffer = buffer.subarray(boundary + 4 + size);
     const msg = JSON.parse(body);
+    const params = msg.params;
     if (msg.method === 'initialize') {
-      respond(msg.id, {
-        capabilities: { positionEncoding: 'utf-16', textDocumentSync: 2 },
+      reply(msg.id, {
+        capabilities: {
+          positionEncoding: 'utf-16',
+          textDocumentSync: { openClose: true, change: 2, save: true },
+        },
         serverInfo: { name: 'gungnir-test-double', version: '1.0.2' },
       });
+    } else if (msg.method === 'textDocument/didOpen') {
+      const doc = params.textDocument;
+      documents.set(doc.uri, { ...doc });
+      analyze(doc);
+    } else if (msg.method === 'textDocument/didChange') {
+      const uri = params.textDocument.uri;
+      const doc = documents.get(uri);
+      if (!doc) continue;
+      const wasBroken = doc.text.includes('BROKEN');
+      const oldVersion = doc.version;
+      change(doc, params.contentChanges);
+      doc.version = params.textDocument.version;
+      analyze(doc);
+      if (wasBroken && !doc.text.includes('BROKEN')) {
+        setTimeout(() => diagnostic(uri, oldVersion, ['Gungnir stale diagnostic']), 70);
+      }
+    } else if (msg.method === 'textDocument/didSave') {
+      const doc = documents.get(params.textDocument.uri);
+      if (doc) analyze(doc);
+    } else if (msg.method === 'textDocument/didClose') {
+      const uri = params.textDocument.uri;
+      documents.delete(uri);
+      diagnostic(uri, null, []);
     } else if (msg.method === 'shutdown') {
       shutdown = true;
-      respond(msg.id, null);
+      reply(msg.id, null);
     } else if (msg.method === 'exit') {
       process.exit(shutdown ? 0 : 1);
     } else if (msg.id !== undefined) {
-      respond(msg.id, null);
+      reply(msg.id, null);
     }
   }
 });
