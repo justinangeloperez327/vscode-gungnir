@@ -130,7 +130,10 @@ suite('Gungnir extension', () => {
         while (!check() && Date.now() < deadline) {
           await new Promise((resolve) => setTimeout(resolve, 40));
         }
-        assert.ok(check(), label);
+        assert.ok(check(), label + ' | document version=' + document.version
+          + ' | diagnostics=' + JSON.stringify(vscode.languages.getDiagnostics(document.uri)
+            .map((d) => ({ message: d.message, code: d.code, source: d.source })))
+          + ' | document end=' + JSON.stringify(document.getText().slice(-120)));
       };
       const mark = new vscode.WorkspaceEdit();
       mark.insert(document.uri, document.positionAt(document.getText().length), '\n// BROKEN\n');
