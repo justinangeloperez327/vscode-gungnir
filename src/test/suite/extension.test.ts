@@ -233,11 +233,12 @@ suite('Gungnir extension', () => {
       assert.ok(references.some((item) => item.uri.toString() === document.uri.toString()));
       assert.ok(references.some((item) => item.uri.toString() === routeDoc.uri.toString()));
 
-      const preparatory = await vscode.commands.executeCommand<vscode.Range>(
-        'vscode.prepareRename', routeDoc.uri, routePos,
-      );
+      const preparatory = await vscode.commands.executeCommand<
+        vscode.Range | { range: vscode.Range; placeholder: string }
+      >('vscode.prepareRename', routeDoc.uri, routePos);
       assert.ok(preparatory, 'Native LSP Prepare Rename must resolve the identifier');
-      assert.equal(routeDoc.getText(preparatory), 'HomeController');
+      const renameRange = 'range' in preparatory ? preparatory.range : preparatory;
+      assert.equal(routeDoc.getText(renameRange), 'HomeController');
 
       const rename = await vscode.commands.executeCommand<vscode.WorkspaceEdit>(
         'vscode.executeDocumentRenameProvider', routeDoc.uri, routePos, 'BetterController',
