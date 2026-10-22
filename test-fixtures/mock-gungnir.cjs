@@ -33,7 +33,7 @@ function diagnostic(uri, version, errors = []) {
 }
 function analyze(doc) {
   diagnostic(doc.uri, doc.version, doc.text.includes('BROKEN')
-    ? ['Gungnir test diagnostic: BROKEN'] : []);
+    ? ['Gungnir test diagnostic: BROKEN (server v' + doc.version + ', tail=' + JSON.stringify(doc.text.slice(-60)) + ')'] : []);
 }
 function point(text, position) {
   let start = 0;
