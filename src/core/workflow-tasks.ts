@@ -23,8 +23,24 @@ export function isGungnirTask(
 /** All task execution uses ProcessExecution: no shell expansion or command injection. */
 export class GungnirTaskProvider implements vscode.TaskProvider {
   private readonly owned = new Set<vscode.TaskExecution>();
+  private readonly started = new WeakSet<vscode.TaskExecution>();
+  private readonly pendingTermination = new Set<vscode.TaskExecution>();
+  private readonly listeners: vscode.Disposable[];
 
-  constructor(private readonly output: vscode.OutputChannel) {}
+  constructor(private readonly output: vscode.OutputChannel) {
+    this.listeners = [
+      vscode.tasks.onDidStartTaskProcess((event) => {
+        const execution = event.execution;
+        if (!isGungnirTask(execution)) return;
+        this.started.add(execution);
+        if (this.pendingTermination.delete(execution)) execution.terminate();
+      }),
+      vscode.tasks.onDidEndTask((event) => {
+        this.pendingTermination.delete(event.execution);
+        this.owned.delete(event.execution);
+      }),
+    ];
+  }
 
   async projectFolders(): Promise<vscode.WorkspaceFolder[]> {
     if (!vscode.workspace.isTrusted) return [];
@@ -140,11 +156,18 @@ export class GungnirTaskProvider implements vscode.TaskProvider {
     return execution;
   }
 
+  /** Defer termination until a task has an actual native process to terminate. */
+  terminate(execution: vscode.TaskExecution): void {
+    if (!isGungnirTask(execution)) return;
+    if (this.started.has(execution)) execution.terminate();
+    else this.pendingTermination.add(execution);
+  }
+
   async stop(folder?: vscode.WorkspaceFolder): Promise<number> {
     const running = vscode.tasks.taskExecutions.filter((item) => isGungnirTask(item)
       && (!folder || (typeof item.task.scope === 'object'
         && item.task.scope.uri.toString() === folder.uri.toString())));
-    for (const execution of running) execution.terminate();
+    for (const execution of running) this.terminate(execution);
     return running.length;
   }
 
@@ -156,10 +179,12 @@ export class GungnirTaskProvider implements vscode.TaskProvider {
   }
 
   async dispose(): Promise<void> {
-    // Kill only workflows launched by this extension, not all user-defined tasks.
+    // Kill only workflows launched by this extension, not user-defined tasks.
     for (const execution of this.owned) {
-      try { execution.terminate(); } catch { /* already exited */ }
+      try { this.terminate(execution); } catch { /* already exited */ }
     }
     this.owned.clear();
+    for (const listener of this.listeners) listener.dispose();
+    this.pendingTermination.clear();
   }
 }
