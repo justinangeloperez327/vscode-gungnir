@@ -14,14 +14,17 @@ describe('native Gungnir formatting policy', () => {
     expect(mayFormat(valid)).toBe(true);
   });
 
-  it.each([
-    [{ trusted: false }, 'untrusted workspace'],
-    [{ enabled: false }, 'disabled formatting'],
-    [{ languageId: 'plaintext' }, 'non-Gungnir document'],
-    [{ scheme: 'untitled' }, 'untitled document'],
-    [{ scheme: 'vscode-remote' }, 'remote document'],
-    [{ inWorkspace: false }, 'file outside Gungnir workspace'],
-  ])('denies %s (%s)', (change) => {
-    expect(mayFormat({ ...valid, ...change })).toBe(false);
+  it('rejects untrusted, disabled and non-Gungnir documents', () => {
+    const rejected: Array<[Partial<FormattingContext>, string]> = [
+      [{ trusted: false }, 'untrusted workspace'],
+      [{ enabled: false }, 'disabled formatting'],
+      [{ languageId: 'plaintext' }, 'non-Gungnir document'],
+      [{ scheme: 'untitled' }, 'untitled document'],
+      [{ scheme: 'vscode-remote' }, 'remote document'],
+      [{ inWorkspace: false }, 'file outside Gungnir workspace'],
+    ];
+    for (const [change, name] of rejected) {
+      expect(mayFormat({ ...valid, ...change }), name).toBe(false);
+    }
   });
 });
