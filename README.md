@@ -57,7 +57,7 @@ do not provide semantic parsing or formatting.
 
 ## Detecting the Gungnir CLI and SDK
 
-Open a trusted VS Code workspace containing a \`.gnr\` file. The status-bar item
+Open a trusted VS Code workspace containing a `.gnr` file. The status-bar item
 reports the CLI/SDK state. Click it or run **Gungnir: Check SDK Installation**
 from the Command Palette to view paths, versions, and setup warnings in the
 **Gungnir** output channel. **Gungnir: Refresh Toolchain Detection** rechecks
@@ -65,23 +65,23 @@ the installation on demand.
 
 Discovery precedence:
 
-1. \`gungnir.executablePath\`: absolute path to the executable (strict override)
-2. \`gungnir.sdkRoot\`: absolute directory containing \`bin/gungnir\` (strict override)
-3. \`GUNGNIR_CMAKE_PREFIX\` environment variable, when absolute
-4. \`PATH\` entries (absolute directories only)
+1. `gungnir.executablePath`: absolute path to the executable (strict override)
+2. `gungnir.sdkRoot`: absolute directory containing `bin/gungnir` (strict override)
+3. `GUNGNIR_CMAKE_PREFIX` environment variable, when absolute
+4. `PATH` entries (absolute directories only)
 
 Use **Gungnir: Select CLI Executable** to configure an explicit path through a
 file picker, or adjust these settings directly. The installer normally updates
-your user \`PATH\`; restart VS Code after installing Gungnir.
+your user `PATH`; restart VS Code after installing Gungnir.
 
-The extension checks \`gungnir --version\`, adjacent \`gungnirc --version\`, and
+The extension checks `gungnir --version`, adjacent `gungnirc --version`, and
 the installed SDK headers/CMake files. A detected CLI without its full SDK is
 reported as **partial** rather than ready. The Gungnir SDK provides
-\`share/gungnir/sdk.txt\` to identify the core/application profile where available.
+`share/gungnir/sdk.txt` to identify the core/application profile where available.
 
-Gungnir version probes use a short timeout and \`shell: false\`. They are disabled
+Gungnir version probes use a short timeout and `shell: false`. They are disabled
 in restricted/untrusted workspaces; no SDK installation or download is attempted.
-Set \`gungnir.toolchain.autoDetect\` to false to run checks only when explicitly
+Set `gungnir.toolchain.autoDetect` to false to run checks only when explicitly
 requested. See the
 [official SDK guide](https://github.com/justinangeloperez327/gungnir/blob/main/docs/sdk-packages.md).
 
