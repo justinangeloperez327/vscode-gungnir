@@ -21,7 +21,7 @@ export function activate(context: vscode.ExtensionContext): void {
   const indicator = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 50);
   indicator.name = 'Gungnir SDK';
   indicator.command = statusCommand;
-  const lspOutput = vscode.window.createOutputChannel('Gungnir Language Server');
+  const lspOutput = vscode.window.createOutputChannel('Gungnir Language Server', { log: true });
   const lifecycle = new ClientLifecycle();
   context.subscriptions.push(output, indicator, lspOutput);
   context.subscriptions.push({ dispose: () => { void lifecycle.dispose(); } });

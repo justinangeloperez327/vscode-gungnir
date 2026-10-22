@@ -13,7 +13,7 @@ export interface LaunchConfiguration {
 
 export function createLanguageServer(
   config: LaunchConfiguration,
-  output: vscode.OutputChannel,
+  output: vscode.LogOutputChannel,
 ): ManagedClient {
   const pattern = new vscode.RelativePattern(config.folder, '**/*.gnr');
   const watcher = vscode.workspace.createFileSystemWatcher(pattern);
@@ -24,7 +24,7 @@ export function createLanguageServer(
     options: { cwd: config.folder.uri.fsPath },
   };
   const clientOptions: LanguageClientOptions = {
-    documentSelector: [{ scheme: 'file', language: 'gungnir', pattern }],
+    documentSelector: [{ scheme: 'file', language: 'gungnir', pattern: '**/*.gnr' }],
     workspaceFolder: config.folder,
     synchronize: { fileEvents: watcher },
     outputChannel: output,
