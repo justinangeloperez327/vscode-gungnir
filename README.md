@@ -5,17 +5,16 @@
 The VS Code extension for the [Gungnir](https://github.com/justinangeloperez327/gungnir)
 expressive C++23 web framework and `.gnr` language.
 
-> **Group 3 / developer preview:** `.gnr` files receive Gungnir syntax highlighting,
-> editor indentation/folding rules, documentation-comment continuation, 26 editor
-> snippets and the **Gungnir: Show Extension Status** command. Native LSP
-> integration, diagnostics and build/generator commands are **not yet implemented**.
+> **Group 4 / developer preview:** `.gnr` syntax highlighting, editor assistance, 26
+> snippets, and trusted-workspace Gungnir CLI/SDK detection are available. Native
+> LSP integration, diagnostics and build/generator commands are **not yet implemented**.
 
 ## Requirements
 
 - Node.js **24** for local development, tests and CI.
 - A desktop installation of Visual Studio Code (VS Code ^1.100.0).
-- Gungnir SDK / `gungnir lsp` will become a prerequisite for language intelligence
-  from Group 5 onward; it is **not** required for Group 1.
+- A Gungnir SDK is **optional** for editing `.gnr` files, but recommended for
+  Group 4 version/installation checks; `gungnir lsp` will be used from Group 5.
 
 ## Get started
 
@@ -56,6 +55,36 @@ Editor configuration supports brace, list and call indentation, folding with
 doc-comment continuation and token-aware quote closing. These lexical rules
 do not provide semantic parsing or formatting.
 
+## Detecting the Gungnir CLI and SDK
+
+Open a trusted VS Code workspace containing a \`.gnr\` file. The status-bar item
+reports the CLI/SDK state. Click it or run **Gungnir: Check SDK Installation**
+from the Command Palette to view paths, versions, and setup warnings in the
+**Gungnir** output channel. **Gungnir: Refresh Toolchain Detection** rechecks
+the installation on demand.
+
+Discovery precedence:
+
+1. \`gungnir.executablePath\`: absolute path to the executable (strict override)
+2. \`gungnir.sdkRoot\`: absolute directory containing \`bin/gungnir\` (strict override)
+3. \`GUNGNIR_CMAKE_PREFIX\` environment variable, when absolute
+4. \`PATH\` entries (absolute directories only)
+
+Use **Gungnir: Select CLI Executable** to configure an explicit path through a
+file picker, or adjust these settings directly. The installer normally updates
+your user \`PATH\`; restart VS Code after installing Gungnir.
+
+The extension checks \`gungnir --version\`, adjacent \`gungnirc --version\`, and
+the installed SDK headers/CMake files. A detected CLI without its full SDK is
+reported as **partial** rather than ready. The Gungnir SDK provides
+\`share/gungnir/sdk.txt\` to identify the core/application profile where available.
+
+Gungnir version probes use a short timeout and \`shell: false\`. They are disabled
+in restricted/untrusted workspaces; no SDK installation or download is attempted.
+Set \`gungnir.toolchain.autoDetect\` to false to run checks only when explicitly
+requested. See the
+[official SDK guide](https://github.com/justinangeloperez327/gungnir/blob/main/docs/sdk-packages.md).
+
 ## Integration tests
 
 ```sh
@@ -86,8 +115,8 @@ second language implementation in TypeScript.
 
 ## Local tests
 
-`npm run test:unit` checks syntax highlighting rules, snippet definitions and editor
-patterns. `npm run test:integration` checks `.gnr` registration and the snippet
+`npm run test:unit` checks syntax highlighting rules, snippet definitions, editor
+patterns and injected cross-platform SDK detection cases. `npm run test:integration` checks `.gnr` registration and the snippet
 contribution in an actual VS Code extension host.
 
 ## License

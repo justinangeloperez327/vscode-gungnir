@@ -5,7 +5,7 @@
 | 1 | Repository, TypeScript, build, lint, unit and extension-host tests, CI, VSIX | Complete |
 | 2 | `.gnr` language registration, TextMate grammar, language configuration and tests | Complete |
 | 3 | Advanced editor behaviors, indentation/folding refinements and snippets | Complete |
-| 4 | Detect locally installed Gungnir CLI and SDK | Planned |
+| 4 | Detect locally installed Gungnir CLI and SDK | Complete |
 | 5 | Connect `vscode-languageclient` to `gungnir lsp` | Planned |
 | 6 | Diagnostics and document synchronization | Planned |
 | 7 | Existing native hover, definitions, completions and symbols | Planned |

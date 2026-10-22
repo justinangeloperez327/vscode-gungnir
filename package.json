@@ -21,13 +21,32 @@
   ],
   "main": "./dist/extension.js",
   "activationEvents": [
-    "onCommand:gungnir.showStatus"
+    "onCommand:gungnir.showStatus",
+    "onLanguage:gungnir",
+    "onCommand:gungnir.checkInstallation",
+    "onCommand:gungnir.selectExecutable",
+    "onCommand:gungnir.refreshToolchain"
   ],
   "contributes": {
     "commands": [
       {
         "command": "gungnir.showStatus",
         "title": "Gungnir: Show Extension Status",
+        "category": "Gungnir"
+      },
+      {
+        "command": "gungnir.checkInstallation",
+        "title": "Gungnir: Check SDK Installation",
+        "category": "Gungnir"
+      },
+      {
+        "command": "gungnir.selectExecutable",
+        "title": "Gungnir: Select CLI Executable",
+        "category": "Gungnir"
+      },
+      {
+        "command": "gungnir.refreshToolchain",
+        "title": "Gungnir: Refresh Toolchain Detection",
         "category": "Gungnir"
       }
     ],
@@ -60,7 +79,38 @@
         "language": "gungnir",
         "path": "./snippets/gungnir.code-snippets"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Gungnir",
+      "properties": {
+        "gungnir.executablePath": {
+          "type": "string",
+          "default": "",
+          "scope": "machine-overridable",
+          "markdownDescription": "Absolute path to the installed `gungnir` CLI executable. When set, this takes precedence over SDK root and `PATH`. Blank means discover automatically."
+        },
+        "gungnir.sdkRoot": {
+          "type": "string",
+          "default": "",
+          "scope": "machine-overridable",
+          "markdownDescription": "Absolute SDK root directory containing `bin/gungnir` (or `bin/gungnir.exe`). Overrides automatic detection when no explicit executable path is provided."
+        },
+        "gungnir.toolchain.autoDetect": {
+          "type": "boolean",
+          "default": true,
+          "scope": "window",
+          "markdownDescription": "Check the local Gungnir CLI and SDK after activating the extension in a trusted workspace. No code is executed in restricted/untrusted workspaces."
+        },
+        "gungnir.toolchain.timeoutMs": {
+          "type": "integer",
+          "default": 3000,
+          "minimum": 500,
+          "maximum": 10000,
+          "scope": "machine-overridable",
+          "markdownDescription": "Maximum milliseconds for each CLI version probe. Applies only when the workspace is trusted."
+        }
+      }
+    }
   },
   "scripts": {
     "clean": "node scripts/clean.mjs",

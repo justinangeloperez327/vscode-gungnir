@@ -58,4 +58,31 @@ suite('Gungnir extension', () => {
     });
     assert.equal(document.languageId, 'gungnir');
   });
+  test('exposes SDK discovery commands and never throws when checking a missing SDK', async () => {
+    const commands = await vscode.commands.getCommands(true);
+    for (const id of ['gungnir.checkInstallation', 'gungnir.refreshToolchain', 'gungnir.selectExecutable']) {
+      assert.ok(commands.includes(id), 'Missing command: ' + id);
+    }
+    const result = await vscode.commands.executeCommand<{
+      state: string;
+      diagnostics: string[];
+      message: string;
+    }>('gungnir.checkInstallation');
+    assert.ok(result);
+    assert.ok(['ready', 'partial', 'missing', 'invalid', 'untrusted'].includes(result.state));
+    assert.ok(Array.isArray(result.diagnostics));
+    assert.equal(typeof result.message, 'string');
+  });
+
+  test('contributes SDK detection settings', () => {
+    const extension = vscode.extensions.getExtension('gungnir.vscode-gungnir');
+    assert.ok(extension);
+    const config = extension.packageJSON.contributes.configuration.properties as Record<
+      string, { type: string; default: unknown }
+    >;
+    assert.equal(config['gungnir.executablePath'].type, 'string');
+    assert.equal(config['gungnir.sdkRoot'].type, 'string');
+    assert.equal(config['gungnir.toolchain.autoDetect'].default, true);
+    assert.equal(config['gungnir.toolchain.timeoutMs'].default, 3000);
+  });
 });

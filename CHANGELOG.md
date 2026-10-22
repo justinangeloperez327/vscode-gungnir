@@ -2,6 +2,15 @@
 
 ## 0.1.0 — Unreleased
 
+### Group 4
+
+- Detect CLI in explicit configuration, SDK roots, `GUNGNIR_CMAKE_PREFIX` and absolute PATH directories.
+- Check CLI/compiler versions, SDK headers/CMake metadata and optional SDK profile.
+- Add SDK status bar, configuration settings, setup diagnostics and Command Palette actions.
+- Respect Workspace Trust before executing CLI commands; use timeouts and no shell.
+- Add injected discovery unit tests and VS Code extension-host integration tests.
+
+
 ### Group 3
 
 - Add 26 framework-specific snippets with searchable `gnr-` prefixes and tab stops.
