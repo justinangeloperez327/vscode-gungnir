@@ -2,6 +2,14 @@
 
 ## 0.1.0 — Unreleased
 
+### Group 7
+
+- Verify native hover, Go to Definition, completions and hierarchical document symbols through real VS Code language-client registrations.
+- Expand the JSON-RPC fixture to implement Gungnir's native semantic capability shapes and cross-file navigation.
+- Add extension-host regression checks for supported and unknown symbols and plaintext exclusion.
+- Document IntelliSense usage and native-server requirements; no duplicate TypeScript parser.
+
+
 ### Group 6
 
 - Preserve the native Gungnir server's versioned publish-diagnostics semantics before VS Code language-client conversion.

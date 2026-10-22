@@ -8,7 +8,7 @@
 | 4 | Detect locally installed Gungnir CLI and SDK | Complete |
 | 5 | Connect `vscode-languageclient` to `gungnir lsp` | Complete |
 | 6 | Versioned diagnostics, incremental synchronization and regression tests | Complete |
-| 7 | Existing native hover, definitions, completions and symbols | Planned |
+| 7 | Native hover, definitions, completions and symbols with extension-host regression tests | Complete |
 | 8 | Formatter and editor settings | Planned |
 | 9 | Project and declaration generators | Planned |
 | 10 | Build, run and dev commands | Planned |

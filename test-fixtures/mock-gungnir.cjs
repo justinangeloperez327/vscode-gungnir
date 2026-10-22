@@ -55,6 +55,72 @@ function change(doc, edits) {
     }
   }
 }
+
+function selection(text, identifier) {
+  const index = text.indexOf(identifier);
+  if (index < 0) return null;
+  const prefix = text.slice(0, index).split('\n');
+  const start = { line: prefix.length - 1, character: prefix.at(-1).length };
+  return {
+    start,
+    end: { line: start.line, character: start.character + identifier.length },
+  };
+}
+function symbolAt(doc, position) {
+  if (!doc || !position) return null;
+  for (const name of ['HomeController', 'index']) {
+    const match = selection(doc.text, name);
+    if (match && position.line === match.start.line
+      && position.character >= match.start.character
+      && position.character < match.end.character) return { name, range: match };
+  }
+  return null;
+}
+function controllerSource() {
+  return [...documents.values()].find((doc) =>
+    doc.uri.endsWith('/app/controllers/HomeController.gnr'));
+}
+function semanticResponse(method, params) {
+  const doc = documents.get(params.textDocument.uri);
+  if (!doc) return null;
+  if (method === 'textDocument/documentSymbol') {
+    const controller = selection(doc.text, 'HomeController');
+    const action = selection(doc.text, 'index');
+    if (!controller || !action) return [];
+    return [{
+      name: 'HomeController', detail: 'controller', kind: 5,
+      range: { start: { line: 0, character: 0 }, end: {
+        line: doc.text.split('\n').length - 1, character: 0,
+      } }, selectionRange: controller,
+      children: [{
+        name: 'index', detail: 'Response', kind: 6,
+        range: action, selectionRange: action, children: [],
+      }],
+    }];
+  }
+  if (method === 'textDocument/completion') {
+    return { isIncomplete: false, items: [
+      { label: 'HomeController', detail: 'controller', kind: 7 },
+      { label: 'index', detail: 'Response index()', kind: 2 },
+      { label: 'return', detail: 'keyword', kind: 14 },
+    ] };
+  }
+  const found = symbolAt(doc, params.position);
+  if (!found) return null;
+  const detail = found.name === 'index'
+    ? 'Response index()' : 'controller HomeController';
+  if (method === 'textDocument/hover') {
+    return { contents: { kind: 'plaintext', value: detail }, range: found.range };
+  }
+  if (method === 'textDocument/definition') {
+    const target = controllerSource();
+    if (!target) return null;
+    const span = selection(target.text, found.name);
+    return span ? { uri: target.uri, range: span } : null;
+  }
+  return null;
+}
+
 process.stdin.on('data', (chunk) => {
   buffer = Buffer.concat([buffer, chunk]);
   while (true) {
@@ -74,6 +140,10 @@ process.stdin.on('data', (chunk) => {
         capabilities: {
           positionEncoding: 'utf-16',
           textDocumentSync: { openClose: true, change: 2, save: true },
+          hoverProvider: true,
+          definitionProvider: true,
+          completionProvider: { resolveProvider: false },
+          documentSymbolProvider: true,
         },
         serverInfo: { name: 'gungnir-test-double', version: '1.0.2' },
       });
@@ -101,6 +171,11 @@ process.stdin.on('data', (chunk) => {
       const uri = params.textDocument.uri;
       documents.delete(uri);
       diagnostic(uri, null, []);
+    } else if (msg.method === 'textDocument/hover'
+      || msg.method === 'textDocument/definition'
+      || msg.method === 'textDocument/completion'
+      || msg.method === 'textDocument/documentSymbol') {
+      if (msg.id !== undefined) reply(msg.id, semanticResponse(msg.method, params));
     } else if (msg.method === 'shutdown') {
       shutdown = true;
       reply(msg.id, null);

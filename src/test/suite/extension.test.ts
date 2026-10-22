@@ -167,6 +167,64 @@ suite('Gungnir extension', () => {
       await new Promise((resolve) => setTimeout(resolve, 220));
       assert.deepEqual(vscode.languages.getDiagnostics(document.uri), [],
         'A stale diagnostic must be dropped at the LSP transport boundary');
+
+      // The language-client must register actual semantic providers, not just
+      // advertise capabilities. VS Code built-in commands traverse the LSP.
+      const controllerOffset = document.getText().indexOf('HomeController');
+      assert.ok(controllerOffset >= 0);
+      const controllerPos = document.positionAt(controllerOffset + 2);
+      const hover = await vscode.commands.executeCommand<vscode.Hover[]>(
+        'vscode.executeHoverProvider', document.uri, controllerPos,
+      );
+      assert.ok(hover?.length, 'Expected a native LSP hover provider');
+      assert.ok(hover[0].contents.some((entry) => (
+        typeof entry === 'string' ? entry.includes('HomeController')
+          : entry.value.includes('HomeController')
+      )), 'Hover should retain the native server detail');
+
+      const completions = await vscode.commands.executeCommand<vscode.CompletionList>(
+        'vscode.executeCompletionItemProvider', document.uri, controllerPos,
+      );
+      const named = completions?.items.find((item) => item.label === 'HomeController');
+      assert.ok(named, 'Expected a native LSP completion item');
+      assert.equal(named.kind, vscode.CompletionItemKind.Class);
+
+      const documentSymbols = await vscode.commands.executeCommand<
+        Array<vscode.DocumentSymbol | vscode.SymbolInformation>
+      >('vscode.executeDocumentSymbolProvider', document.uri);
+      const controllerSymbol = documentSymbols?.find((item) => item.name === 'HomeController');
+      assert.ok(controllerSymbol, 'Expected controller in Outline');
+      assert.ok(controllerSymbol instanceof vscode.DocumentSymbol);
+      assert.ok(controllerSymbol.children.some((item) => item.name === 'index'));
+
+      const routeDoc: vscode.TextDocument = await vscode.workspace.openTextDocument(
+        vscode.Uri.joinPath(project.uri, 'routes/web.gnr'),
+      );
+      const routeOffset = routeDoc.getText().indexOf('HomeController');
+      assert.ok(routeOffset >= 0);
+      const routePos = routeDoc.positionAt(routeOffset + 2);
+      const locations = await vscode.commands.executeCommand<vscode.Location[]>(
+        'vscode.executeDefinitionProvider', routeDoc.uri, routePos,
+      );
+      assert.ok(locations?.length, 'Expected cross-file Go to Definition location');
+      assert.equal(locations[0].uri.toString(), document.uri.toString());
+      assert.equal(document.getText(locations[0].range), 'HomeController');
+
+      const missing = await vscode.commands.executeCommand<vscode.Hover[]>(
+        'vscode.executeHoverProvider', routeDoc.uri, new vscode.Position(0, 0),
+      );
+      assert.ok(!missing?.length, 'Unknown symbols should not receive fabricated hover');
+
+      // Gungnir providers are restricted to file-backed .gnr documents, not
+      // unsaved plaintext buffers, markdown, or unrelated file types.
+      const plain = await vscode.workspace.openTextDocument({
+        language: 'plaintext', content: 'HomeController',
+      });
+      const unrelated = await vscode.commands.executeCommand<vscode.Hover[]>(
+        'vscode.executeHoverProvider', plain.uri, new vscode.Position(0, 2),
+      );
+      assert.ok(!unrelated?.length, 'Must not attach Gungnir hover to plaintext');
+
       const stopped = await vscode.commands.executeCommand<{ state: string }>(
         'gungnir.stopLanguageServer',
       );

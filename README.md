@@ -5,10 +5,10 @@
 The VS Code extension for the [Gungnir](https://github.com/justinangeloperez327/gungnir)
 expressive C++23 web framework and `.gnr` language.
 
-> **Group 6 / developer preview:** Syntax highlighting, 26 snippets, SDK detection,
-> native `gungnir lsp` integration, and version-aware compiler diagnostics are
-> available in trusted workspaces. Semantic navigation verification, multi-root
-> support and framework commands remain on the roadmap.
+> **Group 7 / developer preview:** Syntax highlighting, 26 snippets, SDK detection,
+> diagnostics, and native IntelliSense (hover, Go to Definition, completion,
+> Outline symbols) are available through `gungnir lsp`. Multi-root support,
+> formatting refinement and framework commands remain on the roadmap.
 
 ## Requirements
 
@@ -38,7 +38,7 @@ functions, comments, quoted/raw strings, numbers and operators.
 Choose **Gungnir** manually through the language selector for unsaved files.
 Highlighting uses the TextMate grammar in `syntaxes/gungnir.tmLanguage.json`.
 TextMate highlighting is lexical; it does not provide type checking or IntelliSense.
-Those features will use the native Gungnir language server in subsequent groups.
+Semantic features use the native Gungnir language server when installed.
 
 ## Snippets and editor assistance
 
@@ -111,6 +111,29 @@ stderr is never written to the LSP stdout stream.
 **Current limitation:** one active workspace root. Multi-root/per-folder clients,
 crash backoff and deeper semantic behavior are subsequent groups. Opening a `.gnr` file activates the extension; an unsaved
 document alone does not spawn a server.
+
+## Gungnir IntelliSense
+
+When `gungnir lsp` is running in a trusted local workspace, VS Code registers
+the capabilities advertised by the native server:
+
+- **Hover:** View compiler-derived symbol type/signature information by hovering.
+- **Go to Definition:** Press **F12** or Ctrl-click a symbol to navigate to its
+  declaration; the native server supports imported symbols across `.gnr` files.
+- **Completion:** Press **Ctrl+Space** to request names and symbols from the native
+  server. The existing static `gnr-` snippets remain available independently.
+- **Document symbols:** Use **Outline** or **Go to Symbol in Editor** to navigate
+  controller/model declarations and their members.
+
+Responses are provided by Gungnir's C++ language server, not duplicate
+TypeScript language analysis. Availability and accuracy depend on the installed
+Gungnir SDK version, project configuration and source validity. The native server
+advertises these capabilities without custom extension-side provider registration.
+
+VS Code extension-host tests exercise all four features over real JSON-RPC
+stdio transport against a protocol-compatible fixture, including cross-file
+definitions and isolation from plaintext documents. Testing with the
+installed Windows SDK is still a separate release-validation step.
 
 ## Compiler diagnostics and synchronization
 
