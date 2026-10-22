@@ -194,8 +194,11 @@ suite('Gungnir extension', () => {
       >('vscode.executeDocumentSymbolProvider', document.uri);
       const controllerSymbol = documentSymbols?.find((item) => item.name === 'HomeController');
       assert.ok(controllerSymbol, 'Expected controller in Outline');
-      assert.ok(controllerSymbol instanceof vscode.DocumentSymbol);
-      assert.ok(controllerSymbol.children.some((item) => item.name === 'index'));
+      assert.ok('children' in controllerSymbol
+        && Array.isArray(controllerSymbol.children),
+      'Expected hierarchical Outline result: ' + JSON.stringify(controllerSymbol));
+      assert.ok(controllerSymbol.children.some((item) => item.name === 'index'),
+        'Expected controller action under its parent symbol');
 
       const routeDoc: vscode.TextDocument = await vscode.workspace.openTextDocument(
         vscode.Uri.joinPath(project.uri, 'routes/web.gnr'),
