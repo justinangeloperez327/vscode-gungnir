@@ -2,6 +2,15 @@
 
 ## 0.1.0 — Unreleased
 
+### Group 9
+
+- Add native Gungnir project and 11 declaration generator commands, including a searchable Quick Pick.
+- Enforce structured-project requirements and qualified listener/policy/notification dependencies.
+- Validate names and paths, block existing destinations, prevent symlinked generated subdirectories, and validate CLI output.
+- Execute native binaries without shells, with timeouts/cancellation and actionable error output; open generated files.
+- Add unit and VS Code extension-host generator regression tests, preserving manual-only publication.
+
+
 ### Group 8
 
 - Enable native Gungnir document formatting with VS Code's language-specific default formatter.

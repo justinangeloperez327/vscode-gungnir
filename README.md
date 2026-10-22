@@ -5,9 +5,9 @@
 The VS Code extension for the [Gungnir](https://github.com/justinangeloperez327/gungnir)
 expressive C++23 web framework and `.gnr` language.
 
-> **Group 8 / developer preview:** Syntax highlighting, 26 snippets, SDK detection,
-> diagnostics, native IntelliSense and document formatting via `gungnir lsp`.
-> Multi-root support and framework generators/build commands remain on the roadmap.
+> **Group 9 / developer preview:** Syntax highlighting, snippets, SDK detection,
+> diagnostics, native IntelliSense, native formatting, and CLI-backed project and
+> declaration generators. Build/run tasks and advanced multi-root support are planned.
 
 ## Requirements
 
@@ -133,6 +133,40 @@ VS Code extension-host tests exercise all four features over real JSON-RPC
 stdio transport against a protocol-compatible fixture, including cross-file
 definitions and isolation from plaintext documents. Testing with the
 installed Windows SDK is still a separate release-validation step.
+
+## Project and declaration generators
+
+Run **Gungnir: New Project** to choose a name and an existing parent directory.
+The extension calls `gungnir new <name> <absolute-destination>`, refuses to
+reuse even an empty destination folder, and offers to open the new project.
+It does not change workspaces without your choice.
+
+In a trusted local Gungnir workspace, run **Gungnir: Generate Declaration** and
+select a generator, or use one of the dedicated **Gungnir: Generate Model /
+Controller / Middleware / Migration / Request / Job / Event / Mail / Listener /
+Policy / Notification** commands.
+
+- Models, controllers, middleware and migrations support both legacy and
+  structured projects. Other generators require `profile=structured` in
+  `.gungnir-project`.
+- Listeners require an event reference, such as
+  `app.events.UserCreated::UserCreated`; policies and notifications require
+  a model reference, such as `app.models.User::User`. Gungnir verifies that
+  the referenced declaration actually exists.
+- Names must start with an ASCII letter and contain only letters, numbers,
+  underscore or hyphen, up to 64 characters. Relative paths and arbitrary
+  shell arguments are not permitted.
+- Generated files are **never overwritten**: the extension checks the expected
+  destination and the native CLI checks for existing files too.
+- The native command runs with `shell: false`, a bounded execution time and
+  cancellable progress. Generated `.gnr` files open in VS Code on success.
+- Generation needs a verified Gungnir executable, a trusted workspace and
+  a valid project marker. Failure details appear in the Gungnir output channel.
+  Generator commands never run automatically when opening a project.
+
+The extension uses native Gungnir templates rather than maintaining a second
+set of generated language files. For details, see the
+[CLI code generation guide](https://github.com/justinangeloperez327/gungnir/blob/main/docs/cli-codegen.md).
 
 ## Native formatting
 

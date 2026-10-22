@@ -28,7 +28,20 @@
     "onCommand:gungnir.refreshToolchain",
     "onCommand:gungnir.startLanguageServer",
     "onCommand:gungnir.stopLanguageServer",
-    "onCommand:gungnir.languageServerStatus"
+    "onCommand:gungnir.languageServerStatus",
+    "onCommand:gungnir.newProject",
+    "onCommand:gungnir.generateDeclaration",
+    "onCommand:gungnir.makeModel",
+    "onCommand:gungnir.makeController",
+    "onCommand:gungnir.makeMiddleware",
+    "onCommand:gungnir.makeMigration",
+    "onCommand:gungnir.makeRequest",
+    "onCommand:gungnir.makeJob",
+    "onCommand:gungnir.makeEvent",
+    "onCommand:gungnir.makeMail",
+    "onCommand:gungnir.makeListener",
+    "onCommand:gungnir.makePolicy",
+    "onCommand:gungnir.makeNotification"
   ],
   "contributes": {
     "commands": [
@@ -65,6 +78,71 @@
       {
         "command": "gungnir.languageServerStatus",
         "title": "Gungnir: Language Server Status",
+        "category": "Gungnir"
+      },
+      {
+        "command": "gungnir.newProject",
+        "title": "Gungnir: New Project",
+        "category": "Gungnir"
+      },
+      {
+        "command": "gungnir.generateDeclaration",
+        "title": "Gungnir: Generate Declaration",
+        "category": "Gungnir"
+      },
+      {
+        "command": "gungnir.makeModel",
+        "title": "Gungnir: Generate Model",
+        "category": "Gungnir"
+      },
+      {
+        "command": "gungnir.makeController",
+        "title": "Gungnir: Generate Controller",
+        "category": "Gungnir"
+      },
+      {
+        "command": "gungnir.makeMiddleware",
+        "title": "Gungnir: Generate Middleware",
+        "category": "Gungnir"
+      },
+      {
+        "command": "gungnir.makeMigration",
+        "title": "Gungnir: Generate Migration",
+        "category": "Gungnir"
+      },
+      {
+        "command": "gungnir.makeRequest",
+        "title": "Gungnir: Generate Request",
+        "category": "Gungnir"
+      },
+      {
+        "command": "gungnir.makeJob",
+        "title": "Gungnir: Generate Job",
+        "category": "Gungnir"
+      },
+      {
+        "command": "gungnir.makeEvent",
+        "title": "Gungnir: Generate Event",
+        "category": "Gungnir"
+      },
+      {
+        "command": "gungnir.makeMail",
+        "title": "Gungnir: Generate Mail",
+        "category": "Gungnir"
+      },
+      {
+        "command": "gungnir.makeListener",
+        "title": "Gungnir: Generate Listener",
+        "category": "Gungnir"
+      },
+      {
+        "command": "gungnir.makePolicy",
+        "title": "Gungnir: Generate Policy",
+        "category": "Gungnir"
+      },
+      {
+        "command": "gungnir.makeNotification",
+        "title": "Gungnir: Generate Notification",
         "category": "Gungnir"
       }
     ],

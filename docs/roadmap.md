@@ -10,7 +10,7 @@
 | 6 | Versioned diagnostics, incremental synchronization and regression tests | Complete |
 | 7 | Native hover, definitions, completions and symbols with extension-host regression tests | Complete |
 | 8 | Native formatting, per-language default formatter and format-on-save regression tests | Complete |
-| 9 | Project and declaration generators | Planned |
+| 9 | Safe CLI project and declaration generators with structured-profile checks | Complete |
 | 10 | Build, run and dev commands | Planned |
 | 11 | References, rename, signature help and other LSP extensions | Planned |
 | 12 | Multi-root, performance, cancellation, resilience | Planned |

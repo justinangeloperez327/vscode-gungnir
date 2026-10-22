@@ -1,4 +1,4 @@
-# Architecture — Groups 1–8
+# Architecture — Groups 1–9
 
 The extension runs in VS Code's extension host. TypeScript is bundled with esbuild to
 `dist/extension.js`. Gungnir's C++ CLI and native `gungnir lsp` server are not bundled.
@@ -11,7 +11,8 @@ The extension runs in VS Code's extension host. TypeScript is bundled with esbui
 - **Group 6:** Native server publishes versioned diagnostics. An LSP stdio frame filter drops stale results before the official client discards version metadata, while retaining incremental document synchronization and avoiding diagnostics outside the selected workspace.
 - **Group 7:** Exercise the native server's existing `hoverProvider`, `definitionProvider`, `completionProvider`, and `documentSymbolProvider` through VS Code's actual registered feature commands. Cross-file definition results and nested Outline symbols are verified using a protocol fixture; no second semantic parser is introduced.
 - **Group 8:** Route VS Code document formatting and format-on-save to the native LSP formatter. Contribute an opt-out guard for trusted `.gnr` resources; select `gungnir.vscode-gungnir` as the default formatter for Gungnir without enabling global format-on-save. Native formatter uses fixed four-space indentation.
-- **Group 9–10:** CLI scaffolding, build, run and dev tasks.
+- **Group 9:** Invoke native CLI `new` and `make:*` commands with trusted-workspace checks, strict argument arrays and validation, project-profile-aware support, no-overwrite verification, cancellable bounded execution, and open generated `.gnr` files.
+- **Group 10:** Build, run and development commands.
 - **Group 11–14:** Advanced language intelligence, performance, verification and release.
 
 Source of truth for language semantics is the Gungnir C++ compiler. The extension must not
