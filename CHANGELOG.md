@@ -2,6 +2,14 @@
 
 ## 0.1.0 — Unreleased
 
+### Group 5
+
+- Add official VS Code Language Client integration for native `gungnir lsp` over stdio.
+- Scope requests to the active local Gungnir workspace; respect Workspace Trust and server-enabled settings.
+- Add start/restart/stop/status commands, lifecycle recovery and SDK detection integration.
+- Add lifecycle/startup policy tests and a real VS Code protocol smoke fixture.
+
+
 ### Group 4
 
 - Detect CLI in explicit configuration, SDK roots, `GUNGNIR_CMAKE_PREFIX` and absolute PATH directories.

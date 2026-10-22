@@ -6,7 +6,7 @@
 | 2 | `.gnr` language registration, TextMate grammar, language configuration and tests | Complete |
 | 3 | Advanced editor behaviors, indentation/folding refinements and snippets | Complete |
 | 4 | Detect locally installed Gungnir CLI and SDK | Complete |
-| 5 | Connect `vscode-languageclient` to `gungnir lsp` | Planned |
+| 5 | Connect `vscode-languageclient` to `gungnir lsp` | Complete |
 | 6 | Diagnostics and document synchronization | Planned |
 | 7 | Existing native hover, definitions, completions and symbols | Planned |
 | 8 | Formatter and editor settings | Planned |

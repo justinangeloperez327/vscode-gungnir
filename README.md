@@ -5,16 +5,17 @@
 The VS Code extension for the [Gungnir](https://github.com/justinangeloperez327/gungnir)
 expressive C++23 web framework and `.gnr` language.
 
-> **Group 4 / developer preview:** `.gnr` syntax highlighting, editor assistance, 26
-> snippets, and trusted-workspace Gungnir CLI/SDK detection are available. Native
-> LSP integration, diagnostics and build/generator commands are **not yet implemented**.
+> **Group 5 / developer preview:** Syntax highlighting, 26 snippets, SDK detection,
+> and a native `gungnir lsp` client now work in trusted local workspaces. The
+> language server's own capabilities are forwarded through VS Code; detailed
+> diagnostics/semantic QA, multi-root and framework commands follow in later groups.
 
 ## Requirements
 
 - Node.js **24** for local development, tests and CI.
 - A desktop installation of Visual Studio Code (VS Code ^1.100.0).
 - A Gungnir SDK is **optional** for editing `.gnr` files, but recommended for
-  Group 4 version/installation checks; `gungnir lsp` will be used from Group 5.
+  Group 4 version/installation checks; `gungnir lsp` is used for language intelligence when installed.
 
 ## Get started
 
@@ -85,6 +86,33 @@ Set `gungnir.toolchain.autoDetect` to false to run checks only when explicitly
 requested. See the
 [official SDK guide](https://github.com/justinangeloperez327/gungnir/blob/main/docs/sdk-packages.md).
 
+## Native language server
+
+The extension connects to the installed `gungnir lsp` over standard input/output
+using the VS Code Language Client (LSP/JSON-RPC). Open a `.gnr` file inside a
+trusted local Gungnir workspace. The extension checks the CLI, starts one native
+server for that workspace and opens only its `.gnr` files to that server.
+
+Command Palette actions:
+
+- **Gungnir: Start / Restart Language Server** — explicitly connect or recover
+  after a crash/configuration change.
+- **Gungnir: Stop Language Server** — stop it until manually restarted.
+- **Gungnir: Language Server Status** — inspect connection state.
+- **Gungnir: Check SDK Installation** — inspect paths and installation problems.
+
+You can disable automatic connection with `gungnir.languageServer.enabled=false`.
+In a restricted/untrusted workspace, no `gungnir` binary is spawned. The server
+requires a local file-backed workspace and a CLI identifying as Gungnir; a missing
+full SDK does not block language intelligence if the CLI is otherwise valid.
+A `Gungnir Language Server` output channel shows startup failures. Server
+stderr is never written to the LSP stdout stream.
+
+**Current limitation:** one active workspace root. Multi-root/per-folder clients,
+crash backoff, diagnostics regression coverage and full semantic behavior are
+subsequent groups. Opening a `.gnr` file activates the extension; an unsaved
+document alone does not spawn a server.
+
 ## Integration tests
 
 ```sh
@@ -116,7 +144,7 @@ second language implementation in TypeScript.
 ## Local tests
 
 `npm run test:unit` checks syntax highlighting rules, snippet definitions, editor
-patterns and injected cross-platform SDK detection cases. `npm run test:integration` checks `.gnr` registration and the snippet
+patterns, injected cross-platform SDK detection cases and LSP lifecycle policies. `npm run test:integration` checks `.gnr` registration and the snippet
 contribution in an actual VS Code extension host.
 
 ## License

@@ -25,7 +25,10 @@
     "onLanguage:gungnir",
     "onCommand:gungnir.checkInstallation",
     "onCommand:gungnir.selectExecutable",
-    "onCommand:gungnir.refreshToolchain"
+    "onCommand:gungnir.refreshToolchain",
+    "onCommand:gungnir.startLanguageServer",
+    "onCommand:gungnir.stopLanguageServer",
+    "onCommand:gungnir.languageServerStatus"
   ],
   "contributes": {
     "commands": [
@@ -47,6 +50,21 @@
       {
         "command": "gungnir.refreshToolchain",
         "title": "Gungnir: Refresh Toolchain Detection",
+        "category": "Gungnir"
+      },
+      {
+        "command": "gungnir.startLanguageServer",
+        "title": "Gungnir: Start / Restart Language Server",
+        "category": "Gungnir"
+      },
+      {
+        "command": "gungnir.stopLanguageServer",
+        "title": "Gungnir: Stop Language Server",
+        "category": "Gungnir"
+      },
+      {
+        "command": "gungnir.languageServerStatus",
+        "title": "Gungnir: Language Server Status",
         "category": "Gungnir"
       }
     ],
@@ -108,6 +126,12 @@
           "maximum": 10000,
           "scope": "machine-overridable",
           "markdownDescription": "Maximum milliseconds for each CLI version probe. Applies only when the workspace is trusted."
+        },
+        "gungnir.languageServer.enabled": {
+          "type": "boolean",
+          "default": true,
+          "scope": "window",
+          "markdownDescription": "Enable Gungnir's native `gungnir lsp` process when a `.gnr` source document is open in a trusted workspace. Requires the Gungnir CLI."
         }
       }
     }
@@ -146,5 +170,8 @@
   },
   "bugs": {
     "url": "https://github.com/justinangeloperez327/vscode-gungnir/issues"
+  },
+  "dependencies": {
+    "vscode-languageclient": "10.1.2"
   }
 }

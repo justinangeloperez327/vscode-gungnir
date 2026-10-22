@@ -85,4 +85,49 @@ suite('Gungnir extension', () => {
     assert.equal(config['gungnir.toolchain.autoDetect'].default, true);
     assert.equal(config['gungnir.toolchain.timeoutMs'].default, 3000);
   });
+  test('exposes language server controls without requiring a Gungnir installation', async () => {
+    const commands = await vscode.commands.getCommands(true);
+    for (const id of [
+      'gungnir.startLanguageServer',
+      'gungnir.stopLanguageServer',
+      'gungnir.languageServerStatus',
+    ]) {
+      assert.ok(commands.includes(id), id);
+    }
+    const stopped = await vscode.commands.executeCommand<{ state: string }>('gungnir.stopLanguageServer');
+    assert.equal(stopped.state, 'stopped');
+    const snapshot = await vscode.commands.executeCommand<{ state: string; detail: string }>(
+      'gungnir.languageServerStatus',
+    );
+    assert.equal(snapshot.state, 'stopped');
+    assert.equal(typeof snapshot.detail, 'string');
+  });
+
+  test('connects to an LSP process over stdio (Linux test fixture)', async () => {
+    if (process.platform !== 'linux' || !vscode.workspace.isTrusted) return;
+    const project = vscode.workspace.workspaceFolders?.[0];
+    assert.ok(project);
+    const manifest = vscode.extensions.getExtension('gungnir.vscode-gungnir');
+    assert.ok(manifest);
+    const fake = vscode.Uri.joinPath(manifest.extensionUri, 'test-fixtures', 'mock-gungnir.cjs');
+    const settings = vscode.workspace.getConfiguration('gungnir');
+    const original = settings.inspect<string>('executablePath')?.globalValue;
+    const originalEnabled = settings.inspect<boolean>('languageServer.enabled')?.globalValue;
+    try {
+      await settings.update('languageServer.enabled', true, vscode.ConfigurationTarget.Global);
+      await settings.update('executablePath', fake.fsPath, vscode.ConfigurationTarget.Global);
+      await vscode.workspace.openTextDocument(vscode.Uri.joinPath(project.uri, 'app/controllers/HomeController.gnr'));
+      const status = await vscode.commands.executeCommand<{ state: string; detail: string }>(
+        'gungnir.startLanguageServer',
+      );
+      assert.equal(status.state, 'running', status.detail);
+      const stopped = await vscode.commands.executeCommand<{ state: string }>(
+        'gungnir.stopLanguageServer',
+      );
+      assert.equal(stopped.state, 'stopped');
+    } finally {
+      await settings.update('executablePath', original, vscode.ConfigurationTarget.Global);
+      await settings.update('languageServer.enabled', originalEnabled, vscode.ConfigurationTarget.Global);
+    }
+  });
 });
