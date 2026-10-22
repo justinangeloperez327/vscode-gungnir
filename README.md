@@ -19,7 +19,7 @@ expressive C++23 web framework and `.gnr` language.
 ## Get started
 
 ```sh
-npm install
+npm ci
 npm run lint
 npm run build
 npm run test:unit

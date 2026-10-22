@@ -12,7 +12,6 @@ npm run test:integration
 npm run package
 ```
 
-Until `package-lock.json` is committed, use `npm install` instead of `npm ci`.
 Linux integration tests need a display server; CI uses `xvfb-run -a npm run test:integration`.
 Open the repository in VS Code and press F5 to launch an Extension Development Host.
 Run **Gungnir: Show Extension Status** in the Command Palette.

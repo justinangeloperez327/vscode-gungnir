@@ -2,7 +2,7 @@
 
 | Group | Scope | Status |
 | --- | --- | --- |
-| 1 | Repository, TypeScript, build, lint, unit and extension-host tests, CI, VSIX | In progress |
+| 1 | Repository, TypeScript, build, lint, unit and extension-host tests, CI, VSIX | Complete |
 | 2 | `.gnr` language registration and TextMate grammar | Planned |
 | 3 | Brackets, comments, folding, indentation and snippets | Planned |
 | 4 | Detect locally installed Gungnir CLI and SDK | Planned |
