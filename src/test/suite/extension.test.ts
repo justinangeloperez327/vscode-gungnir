@@ -251,7 +251,7 @@ suite('Gungnir extension', () => {
         '    }',
         '}',
         '',
-      ].join('\\n');
+      ].join('\n');
       await vscode.workspace.fs.writeFile(formattedUri, Buffer.from(raw, 'utf8'));
       const originalFormatEnabled = settings.inspect<boolean>('formatting.enabled')?.globalValue;
       const languageConfig = vscode.workspace.getConfiguration('[gungnir]');
