@@ -84,8 +84,10 @@ export async function generateDeclaration(
   if (reported !== target) {
     throw new Error('Gungnir reported an unexpected generated path: ' + reported);
   }
-  const created = await stat(target);
-  if (!created.isFile()) throw new Error('Gungnir did not create the expected source file.');
+  const created = await lstat(target);
+  if (!created.isFile() || created.isSymbolicLink()) {
+    throw new Error('Gungnir did not create a regular source file.');
+  }
   return { command: planned.args, source: target, stdout };
 }
 

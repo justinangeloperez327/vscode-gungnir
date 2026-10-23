@@ -2,6 +2,15 @@
 
 ## 0.1.0 — Unreleased
 
+### Group 13
+
+- Expand Node.js 24 CI to Ubuntu 24.04, Windows 2025 and macOS 15, with extension-host tests on each.
+- Extend POSIX stdio integration fixtures to macOS; retain Windows editor/command smoke tests.
+- Validate Windows absolute, UNC and drive-relative generator paths; refuse symlinked generated files.
+- Test multi-root lifecycle under 32 projects and repeated workspace switching, plus retry-budget stability reset.
+- Document remaining end-to-end validation with the real Windows Gungnir SDK before manual release.
+
+
 ### Group 12
 
 - Run one native Gungnir LSP client per active local workspace folder instead of switching a single client between roots.

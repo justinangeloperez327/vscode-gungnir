@@ -96,12 +96,19 @@ export function isStructuredProject(marker: string): boolean {
 
 /** Keep untrusted stdout paths from opening arbitrary files outside the selected project. */
 export function safeGeneratedPath(root: string, candidate: string): string {
-  if (!candidate || path.isAbsolute(candidate) || candidate.includes('\\') || candidate.includes('\0')) {
+  // A drive-qualified or UNC path is unsafe on every host, even when
+  // validated on Linux before packaging for Windows.
+  if (!candidate || candidate.includes('\0') || candidate.includes('\r')
+    || candidate.includes('\n') || /^[A-Za-z]:/.test(candidate) || path.win32.isAbsolute(candidate)
+    || path.posix.isAbsolute(candidate)
+    || (process.platform !== 'win32' && candidate.includes('\\'))) {
     throw new Error('Generator reported an unsafe source path.');
   }
   const resolvedRoot = path.resolve(root);
   const resolved = path.resolve(resolvedRoot, candidate);
-  if (!resolved.startsWith(resolvedRoot + path.sep) || path.extname(resolved) !== '.gnr') {
+  const relative = path.relative(resolvedRoot, resolved);
+  if (!relative || relative === '..' || relative.startsWith('..' + path.sep)
+    || path.isAbsolute(relative) || path.extname(resolved).toLowerCase() !== '.gnr') {
     throw new Error('Generator source path must be a .gnr file inside the project.');
   }
   return resolved;

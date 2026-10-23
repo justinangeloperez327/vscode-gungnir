@@ -91,4 +91,37 @@ describe('independent workspace LSP lifecycle', () => {
     expect(f.events.filter((x) => x.startsWith('start:'))).toHaveLength(1);
     await f.manager.dispose();
   });
+
+  it('bounds a large batch of root switches without duplicate processes', async () => {
+    const f = fixture();
+    const roots = Array.from({ length: 32 }, (_, i) => ({
+      uri: 'file:///project-' + i, name: 'project-' + i,
+    }));
+    await f.manager.synchronize(roots, '/bin/cli');
+    expect(f.manager.snapshots).toHaveLength(32);
+    expect(f.events.filter((event) => event.startsWith('start:'))).toHaveLength(32);
+    for (let n = 0; n < 10; n++) {
+      await f.manager.synchronize([...roots].reverse(), '/bin/cli');
+    }
+    expect(f.events.filter((event) => event.startsWith('start:'))).toHaveLength(32);
+    await f.manager.stopAll();
+    expect(f.manager.snapshots).toEqual([]);
+    expect(f.events.filter((event) => event.startsWith('dispose:'))).toHaveLength(32);
+    await f.manager.dispose();
+  });
+
+  it('resets crash budgets only after the healthy interval', async () => {
+    vi.useFakeTimers();
+    const f = fixture([10, 20]);
+    await f.manager.synchronize([first], '/bin/cli');
+    f.exits.get(first.uri)?.();
+    await vi.advanceTimersByTimeAsync(10);
+    expect(f.manager.snapshots[0].attempts).toBe(1);
+    await vi.advanceTimersByTimeAsync(30000);
+    expect(f.manager.snapshots[0].attempts).toBe(0);
+    f.exits.get(first.uri)?.();
+    expect(f.manager.snapshots[0].attempts).toBe(1);
+    await f.manager.dispose();
+  });
+
 });

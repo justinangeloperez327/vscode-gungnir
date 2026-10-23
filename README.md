@@ -5,9 +5,24 @@
 The VS Code extension for the [Gungnir](https://github.com/justinangeloperez327/gungnir)
 expressive C++23 web framework and `.gnr` language.
 
-> **Group 12 / developer preview:** Multi-root Gungnir workspaces, native
-> IntelliSense, diagnostics, generators, formatting, and build/run/dev tasks.
-> Native advanced language features require a compatible installed SDK.
+> **Group 13 / developer preview:** Multi-root IntelliSense, diagnostics,
+> generators, formatting, build/run/dev tasks and three-platform CI checks.
+> Advanced LSP features require a compatible native Gungnir SDK.
+
+## Cross-platform verification
+
+CI checks **Node.js 24** lint, type checking, unit tests, and a VS Code
+extension host on **Windows 2025**, **Ubuntu 24.04**, and **macOS 15**.
+Linux/macOS integration tests exercise native stdio through executable
+protocol fixtures; Windows tests validate extension contributions and
+commands but cannot execute the POSIX-only Node shebang fixtures as a native
+`.exe`. Full native Windows CLI/LSP and installer verification with the
+actual Gungnir SDK is required before publication.
+
+Generator paths are checked against traversal, UNC, drive-relative and
+absolute paths. Existing destinations and generated symlinks are not opened.
+Crash recovery is bounded, and workspace-root tests stress repeated switching,
+cleanup and retry-budget reset. No CI job publishes the Marketplace extension.
 
 ## Requirements
 

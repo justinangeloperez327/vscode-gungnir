@@ -53,6 +53,18 @@ describe('Gungnir CLI generator plans', () => {
     expect(isStructuredProject('name=demo\n')).toBe(false);
     expect(isStructuredProject('profile=legacy\n')).toBe(false);
   });
+  it('rejects Windows absolute, UNC and drive-qualified output paths on every host', () => {
+    const root = path.resolve('/tmp/gungnir-app');
+    for (const candidate of [
+      'C:\\Windows\\Temp\\Evil.gnr',
+      '\\\\server\\share\\Evil.gnr',
+      'D:/sdk/app/models/Outside.gnr',
+      '../../outside.gnr',
+      'app/models/../../../../outside.gnr',
+      'app/models/Bad.gnr\\junk',
+    ]) expect(() => safeGeneratedPath(root, candidate)).toThrow();
+  });
+
   it('only opens declared local .gnr files beneath project root', () => {
     const root = path.resolve('/tmp/gungnir-app');
     expect(parseGeneratedSource('Created app/models/User.gnr\n', root))

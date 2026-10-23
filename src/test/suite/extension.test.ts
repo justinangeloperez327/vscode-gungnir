@@ -116,7 +116,7 @@ suite('Gungnir extension', () => {
   });
 
   test('connects to an LSP process over stdio (Linux test fixture)', async () => {
-    if (process.platform !== 'linux' || !vscode.workspace.isTrusted) return;
+    if (process.platform === 'win32' || !vscode.workspace.isTrusted) return;
     const project = vscode.workspace.workspaceFolders?.[0];
     assert.ok(project);
     const manifest = vscode.extensions.getExtension('gungnir.vscode-gungnir');
@@ -366,7 +366,7 @@ suite('Gungnir extension', () => {
   });
 
   test('generates a model using a verified native CLI executable without overwrites', async () => {
-    if (process.platform !== 'linux' || !vscode.workspace.isTrusted) return;
+    if (process.platform === 'win32' || !vscode.workspace.isTrusted) return;
     const folder = vscode.workspace.workspaceFolders?.[0];
     const extension = vscode.extensions.getExtension('gungnir.vscode-gungnir');
     assert.ok(folder);
@@ -401,7 +401,7 @@ suite('Gungnir extension', () => {
 
 
   test('provides Gungnir tasks and verifies build execution and dev termination', async () => {
-    if (process.platform !== 'linux' || !vscode.workspace.isTrusted) return;
+    if (process.platform === 'win32' || !vscode.workspace.isTrusted) return;
     const project = vscode.workspace.workspaceFolders?.[0];
     const extension = vscode.extensions.getExtension('gungnir.vscode-gungnir');
     assert.ok(project);
@@ -486,7 +486,7 @@ suite('Gungnir extension', () => {
 
 
   test('isolates two workspace roots, survives a server crash, and removes stale clients', async () => {
-    if (process.platform !== 'linux' || !vscode.workspace.isTrusted) return;
+    if (process.platform === 'win32' || !vscode.workspace.isTrusted) return;
     const originalRoot = vscode.workspace.workspaceFolders?.[0];
     const extension = vscode.extensions.getExtension('gungnir.vscode-gungnir');
     assert.ok(originalRoot);

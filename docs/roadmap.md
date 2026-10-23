@@ -14,7 +14,7 @@
 | 10 | Native build/run/dev tasks, terminal output and task lifecycle controls | Complete |
 | 11 | Native References, Rename and Signature Help with protocol regression tests | Complete |
 | 12 | Independent multi-root LSP clients, bounded restart and lifecycle regression tests | Complete |
-| 13 | Regression and cross-platform tests | Planned |
+| 13 | Windows/Linux/macOS CI and portability/security/lifecycle regression tests | Complete |
 | 14 | VSIX validation and manual Marketplace release | Planned |
 
 Releases should be manually approved; GitHub Actions must never publish to the Marketplace.

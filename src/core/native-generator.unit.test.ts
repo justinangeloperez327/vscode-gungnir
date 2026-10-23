@@ -48,10 +48,24 @@ describe('native CLI project/declaration execution', () => {
     const outside = path.join(root, 'outside');
     await mkdir(outside);
     await mkdir(path.join(work, 'app'));
-    await symlink(outside, path.join(work, 'app/models'));
+    await symlink(outside, path.join(work, 'app/models'), process.platform === 'win32' ? 'junction' : 'dir');
     await expect(generateDeclaration(binary, work, 'model', 'User', undefined,
       async () => { throw new Error('unexpected binary execution'); }))
       .rejects.toThrow(/symbolic link/);
+  });
+
+  it('rejects a generated symbolic-link file before opening it', async () => {
+    if (process.platform === 'win32') return; // Windows CI runners do not grant symbolic-link privileges.
+    const outside = path.join(root, 'outside.gnr');
+    await writeFile(outside, 'model Outside {}');
+    const runner: NativeCommand = async (_binary, args, cwd) => {
+      expect(args).toEqual(['make:model', 'Evil']);
+      await mkdir(path.join(cwd, 'app/models'), { recursive: true });
+      await symlink(outside, path.join(cwd, 'app/models/Evil.gnr'), 'file');
+      return 'Created app/models/Evil.gnr';
+    };
+    await expect(generateDeclaration(binary, work, 'model', 'Evil', undefined, runner))
+      .rejects.toThrow(/regular source file/);
   });
 
   it('requires a regular Gungnir project marker and real CLI success', async () => {
