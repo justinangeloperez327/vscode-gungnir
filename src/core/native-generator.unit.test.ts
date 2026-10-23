@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { mkdtemp, mkdir, readFile, rm, symlink, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, realpath, rm, symlink, writeFile } from 'node:fs/promises';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { createProject, generateDeclaration, type NativeCommand } from './native-generator';
@@ -8,7 +8,8 @@ let root = '';
 let work = '';
 const binary = path.resolve('/opt/gungnir/bin/gungnir');
 beforeEach(async () => {
-  root = await mkdtemp(path.join(os.tmpdir(), 'gungnir-vscode-gen-'));
+  // macOS /var -> /private/var and Windows 8.3 short paths need canonical roots.
+  root = await realpath(await mkdtemp(path.join(os.tmpdir(), 'gungnir-vscode-gen-')));
   work = path.join(root, 'app');
   await mkdir(work);
   await writeFile(path.join(work, '.gungnir-project'), 'name=demo\nprofile=structured\n');

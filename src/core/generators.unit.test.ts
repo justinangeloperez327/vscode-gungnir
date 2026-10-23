@@ -69,8 +69,15 @@ describe('Gungnir CLI generator plans', () => {
     const root = path.resolve('/tmp/gungnir-app');
     expect(parseGeneratedSource('Created app/models/User.gnr\n', root))
       .toBe(path.join(root, 'app/models/User.gnr'));
-    for (const value of ['../outside.gnr', '/tmp/outside.gnr', 'models\\user.gnr', 'model.txt']) {
+    for (const value of ['../outside.gnr', '/tmp/outside.gnr', 'model.txt']) {
       expect(() => safeGeneratedPath(root, value)).toThrow();
+    }
+    // Windows CLI output may legitimately use backslash directory separators.
+    if (process.platform === 'win32') {
+      expect(safeGeneratedPath(root, 'models\\user.gnr'))
+        .toBe(path.join(root, 'models', 'user.gnr'));
+    } else {
+      expect(() => safeGeneratedPath(root, 'models\\user.gnr')).toThrow();
     }
     expect(() => parseGeneratedSource('Failed\n', root)).toThrow(/did not report/);
   });
