@@ -75,8 +75,11 @@ jobs:
           $zip = Join-Path $env:RUNNER_TEMP $asset
           Invoke-WebRequest -Uri "$base/$asset" -OutFile $zip
           $checksums = (Invoke-WebRequest -Uri "$base/SHA256SUMS.txt").Content
-          $entry = ($checksums -split "`r?`n" | Where-Object { $_ -match [regex]::Escape($asset) } | Select-Object -First 1)
-          if (-not $entry -or $entry -notmatch '^([a-fA-F0-9]{64})\s+\*?') { throw 'Missing official SDK checksum' }
+          $entry = ($checksums -split '\r?\n' | Where-Object { $_ -like "*$asset*" } | Select-Object -First 1)
+          if (-not $entry -or $entry -notmatch '(?i)([a-f0-9]{64})') {
+            Write-Output ('Checksums content: ' + ($checksums | Out-String))
+            throw 'Missing official SDK checksum'
+          }
           $expected = $Matches[1].ToLowerInvariant()
           $actual = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLowerInvariant()
           if ($expected -ne $actual) { throw "SDK checksum mismatch: $expected / $actual" }
