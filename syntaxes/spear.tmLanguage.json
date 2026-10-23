@@ -1,0 +1,178 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Gungnir Spear",
+  "scopeName": "text.html.spear",
+  "fileTypes": [
+    "spear"
+  ],
+  "patterns": [
+    {
+      "include": "#verbatim"
+    },
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#escapedSyntax"
+    },
+    {
+      "include": "#rawExpression"
+    },
+    {
+      "include": "#escapedExpression"
+    },
+    {
+      "include": "#directives"
+    },
+    {
+      "include": "text.html.basic"
+    }
+  ],
+  "repository": {
+    "verbatim": {
+      "patterns": [
+        {
+          "name": "meta.embedded.block.verbatim.spear",
+          "begin": "(?<!@)(@verbatim)\\b",
+          "beginCaptures": {
+            "1": {
+              "name": "keyword.control.verbatim.spear"
+            }
+          },
+          "end": "(?<!@)(@endverbatim)\\b",
+          "endCaptures": {
+            "1": {
+              "name": "keyword.control.verbatim.spear"
+            }
+          },
+          "contentName": "string.unquoted.verbatim.spear"
+        }
+      ]
+    },
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.block.spear",
+          "begin": "\\{\\{--",
+          "end": "--\\}\\}"
+        }
+      ]
+    },
+    "escapedSyntax": {
+      "patterns": [
+        {
+          "name": "constant.character.escape.spear",
+          "match": "@@[A-Za-z_][A-Za-z0-9_]*"
+        },
+        {
+          "name": "constant.character.escape.spear",
+          "begin": "@\\{\\{",
+          "end": "\\}\\}"
+        }
+      ]
+    },
+    "rawExpression": {
+      "patterns": [
+        {
+          "name": "meta.embedded.expression.raw.spear",
+          "begin": "\\{!!",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.section.embedded.begin.spear"
+            }
+          },
+          "end": "!!\\}",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.section.embedded.end.spear"
+            }
+          },
+          "patterns": [
+            {
+              "include": "#expressionTokens"
+            }
+          ]
+        }
+      ]
+    },
+    "escapedExpression": {
+      "patterns": [
+        {
+          "name": "meta.embedded.expression.escaped.spear",
+          "begin": "\\{\\{(?!-)",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.section.embedded.begin.spear"
+            }
+          },
+          "end": "\\}\\}",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.section.embedded.end.spear"
+            }
+          },
+          "patterns": [
+            {
+              "include": "#expressionTokens"
+            }
+          ]
+        }
+      ]
+    },
+    "directives": {
+      "patterns": [
+        {
+          "name": "meta.directive.control.spear",
+          "match": "(?<![@A-Za-z0-9_.])@(if|elseif|else|endif|unless|endunless|foreach|endforeach|forelse|empty|endforelse|include|extends|section|endsection|yield)\\b",
+          "captures": {
+            "0": {
+              "name": "keyword.control.spear"
+            }
+          }
+        }
+      ]
+    },
+    "expressionTokens": {
+      "patterns": [
+        {
+          "name": "string.quoted.single.spear",
+          "begin": "'",
+          "end": "'",
+          "patterns": [
+            {
+              "name": "constant.character.escape.spear",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.double.spear",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.spear",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "constant.language.spear",
+          "match": "\\b(?:true|false|null|this|loop)\\b"
+        },
+        {
+          "name": "constant.numeric.spear",
+          "match": "(?<![\\w$])\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+        },
+        {
+          "name": "keyword.operator.spear",
+          "match": "\\?\\?|===|!==|==|!=|<=|>=|&&|\\|\\||=>|->|[!?<>.\\[\\]:]"
+        },
+        {
+          "name": "variable.other.spear",
+          "match": "\\$?[A-Za-z_][A-Za-z0-9_]*"
+        }
+      ]
+    }
+  }
+}

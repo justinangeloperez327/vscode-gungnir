@@ -36,7 +36,7 @@ Do not mark these steps complete merely because a protocol fixture or Windows 1.
 2. Review `README.md`, `CHANGELOG.md`, `LICENSE`, `package.json` and the verified VSIX contents. Confirm screenshots/icons, listing text and preview designation.
 3. Download the `gungnir-vsix` artifact from a **successful** CI run. Verify its digest against `vscode-gungnir.vsix.sha256`.
 4. Install it manually in VS Code: **Extensions → ⋯ → Install from VSIX...**. Confirm the extension identifier is `gungnir.vscode-gungnir` and version `0.1.0`.
-5. Complete the native Windows acceptance checklist and explicitly approve public publication.
+5. Validate `.gnr` and `.spear` separately, including Spear HTML/directive highlighting and snippets without triggering native `.gnr` LSP features. Complete the native Windows acceptance checklist and explicitly approve public publication.
 6. Authenticate locally using a securely stored Azure DevOps Marketplace personal access token via the VS Code Extension Manager (`vsce`) instructions. **Do not place tokens in source control or Actions.**
 7. Publish the verified VSIX manually under the verified publisher, as a preview if appropriate. Validate the live Marketplace listing and installation before tagging a release. A GitHub release may be created manually after sign-off.
 

@@ -15,6 +15,6 @@
 | 11 | Native References, Rename and Signature Help with protocol regression tests | Complete |
 | 12 | Independent multi-root LSP clients, bounded restart and lifecycle regression tests | Complete |
 | 13 | Windows/Linux/macOS CI and portability/security/lifecycle regression tests | Complete |
-| 14 | VSIX release audit and Windows SDK smoke; manual Marketplace publication | Release candidate prepared — publication pending |
+| 14 | VSIX audit, native Windows SDK smoke and Spear language support | Release candidate prepared — publication pending |
 
 Releases should be manually approved; GitHub Actions must never publish to the Marketplace.

@@ -23,3 +23,12 @@ maintain an independent Gungnir parser or spawn a compiler for every completion 
 
 Security: respect VS Code Workspace Trust before executing project commands or processes.
 Do not auto-run `gungnir dev`, download an SDK, or publish extensions on activation.
+
+## Spear templates (Group 14 correction)
+
+`.spear` is a separate editor language (`gungnir-spear`) with HTML lexical
+highlighting plus Spear directives, escaped/raw expressions, comments and
+verbatim rules. It also contributes templates-specific snippets and editor
+indentation/comment settings. The native `.gnr` LSP selector is unchanged:
+Spear-specific semantic parsing, diagnostics, completions and formatting
+are not falsely advertised.

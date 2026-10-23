@@ -2,6 +2,13 @@
 
 ## 0.1.0 — Unreleased (preview release candidate)
 
+### Group 14 follow-up — Spear templates
+
+- Register `.spear` separately from `.gnr` and HTML files.
+- Add embedded HTML and Spear directive/expression highlighting, comments and verbatim handling.
+- Add 12 scoped Spear snippets, dedicated editor configuration and regression tests.
+- Keep the native `.gnr` LSP selector unchanged.
+
 ### Group 14
 
 - Audit the packed VSIX for integrity, required metadata, stray source/debug binaries and development content.

@@ -1,0 +1,102 @@
+{
+  "Spear: escaped expression": {
+    "prefix": "spear-echo",
+    "body": [
+      "{{ ${1:value} }}"
+    ],
+    "description": "Escape HTML output from a Spear expression."
+  },
+  "Spear: trusted raw HTML": {
+    "prefix": "spear-raw",
+    "body": [
+      "{!! ${1:trustedHtml} !!}"
+    ],
+    "description": "Unescaped HTML: use only with trusted content."
+  },
+  "Spear: if block": {
+    "prefix": "spear-if",
+    "body": [
+      "@if(${1:condition})",
+      "    $0",
+      "@endif"
+    ],
+    "description": "Conditional view block."
+  },
+  "Spear: if/else block": {
+    "prefix": "spear-ifelse",
+    "body": [
+      "@if(${1:condition})",
+      "    ${2:content}",
+      "@else",
+      "    $0",
+      "@endif"
+    ],
+    "description": "Conditional view with else branch."
+  },
+  "Spear: foreach block": {
+    "prefix": "spear-foreach",
+    "body": [
+      "@foreach(${1:items} as ${2:item})",
+      "    $0",
+      "@endforeach"
+    ],
+    "description": "Iterate Spear collection."
+  },
+  "Spear: forelse block": {
+    "prefix": "spear-forelse",
+    "body": [
+      "@forelse(${1:items} as ${2:item})",
+      "    ${3:content}",
+      "@empty",
+      "    $0",
+      "@endforelse"
+    ],
+    "description": "Iterate Spear collection with empty state."
+  },
+  "Spear: include partial": {
+    "prefix": "spear-include",
+    "body": [
+      "@include('${1:partials/item}', {${2:key}: ${3:value}})"
+    ],
+    "description": "Include a Spear partial with data."
+  },
+  "Spear: extend layout": {
+    "prefix": "spear-extends",
+    "body": [
+      "@extends('${1:layouts/app}')"
+    ],
+    "description": "Extend a Spear layout."
+  },
+  "Spear: section": {
+    "prefix": "spear-section",
+    "body": [
+      "@section('${1:content}')",
+      "    $0",
+      "@endsection"
+    ],
+    "description": "Define a Spear layout section."
+  },
+  "Spear: yield": {
+    "prefix": "spear-yield",
+    "body": [
+      "@yield('${1:content}')"
+    ],
+    "description": "Render a Spear layout section."
+  },
+  "Spear: comment": {
+    "prefix": "spear-comment",
+    "body": [
+      "{{-- $0 --}}"
+    ],
+    "description": "Spear template comment."
+  },
+  "Spear: verbatim block": {
+    "prefix": "spear-verbatim",
+    "body": [
+      "@verbatim",
+      "    $0",
+      "@endverbatim"
+    ],
+    "description": "Literal template section; do not interpolate directives."
+  }
+}

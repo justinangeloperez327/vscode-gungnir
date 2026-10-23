@@ -5,9 +5,9 @@
 The VS Code extension for the [Gungnir](https://github.com/justinangeloperez327/gungnir)
 expressive C++23 web framework and `.gnr` language.
 
-> **v0.1.0 preview release candidate:** Syntax highlighting, native LSP
-> features, CLI scaffolding, formatting, build/run/dev tasks and multi-root
-> workspaces. Native features require an installed compatible Gungnir SDK.
+> **v0.1.0 preview release candidate:** Gungnir `.gnr` source tooling and
+> Spear `.spear` view-template highlighting, snippets and editor assistance.
+> Native `.gnr` language features require a compatible installed Gungnir SDK.
 > Manual Marketplace release is pending publisher verification.
 
 ## Release candidate and installation
@@ -64,6 +64,24 @@ npm run test:unit
 
 Open the folder in Visual Studio Code, press **F5** and run
 **Gungnir: Show Extension Status** from the Command Palette.
+
+## Spear view templates (`.spear`)
+
+Spear is Gungnir's HTML-based server-rendered template language. The extension
+recognizes `.spear` automatically and highlights embedded HTML, `{{ escaped }}`
+output, `{!! trustedHtml !!}` raw HTML, `{{-- comments --}}`, `@if`,
+`@forelse`, `@include`, `@extends`, `@section`, `@yield`,
+`@verbatim` and escaped directive text.
+
+Spear has separate editor comments, indentation rules, and 12 snippets using
+the `spear-` prefix. Raw output is **not escaped** and should only render
+trusted HTML.
+
+The native `gungnir lsp` currently supports `.gnr`, not Spear template
+semantic diagnostics/completion/formatting. `.html` remains associated with
+VS Code's regular HTML language and Gungnir's existing legacy view grammar.
+
+For details consult the [Gungnir view guide](https://github.com/justinangeloperez327/gungnir/blob/main/docs/view.md).
 
 ## Syntax highlighting
 

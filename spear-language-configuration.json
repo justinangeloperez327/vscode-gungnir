@@ -1,0 +1,84 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vscode/main/extensions/json/schemas/language-configuration.schema.json",
+  "comments": {
+    "blockComment": [
+      "{{--",
+      "--}}"
+    ]
+  },
+  "brackets": [
+    [
+      "{",
+      "}"
+    ],
+    [
+      "[",
+      "]"
+    ],
+    [
+      "(",
+      ")"
+    ],
+    [
+      "<",
+      ">"
+    ]
+  ],
+  "autoClosingPairs": [
+    {
+      "open": "{",
+      "close": "}"
+    },
+    {
+      "open": "[",
+      "close": "]"
+    },
+    {
+      "open": "(",
+      "close": ")"
+    },
+    {
+      "open": "\"",
+      "close": "\"",
+      "notIn": [
+        "string",
+        "comment"
+      ]
+    },
+    {
+      "open": "'",
+      "close": "'",
+      "notIn": [
+        "string",
+        "comment"
+      ]
+    }
+  ],
+  "surroundingPairs": [
+    [
+      "{",
+      "}"
+    ],
+    [
+      "[",
+      "]"
+    ],
+    [
+      "(",
+      ")"
+    ],
+    [
+      "\"",
+      "\""
+    ],
+    [
+      "'",
+      "'"
+    ]
+  ],
+  "wordPattern": "(-?\\d*\\.\\d\\w*)|([A-Za-z_$][\\w$]*)",
+  "indentationRules": {
+    "increaseIndentPattern": "^\\s*(?:@(if|unless|foreach|forelse|section|verbatim)\\b.*|<(?!\\/?(?:br|hr|img|input|meta|link|source|area)\\b)[A-Za-z][^>]*>(?!.*<\\/[A-Za-z][^>]*>))\\s*$",
+    "decreaseIndentPattern": "^\\s*(?:@(else|elseif|empty|endif|endunless|endforeach|endforelse|endsection|endverbatim)\\b|<\\/[A-Za-z][^>]*>)"
+  }
+}

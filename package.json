@@ -1,7 +1,7 @@
 {
   "name": "vscode-gungnir",
   "displayName": "Gungnir",
-  "description": "VS Code language tools and developer commands for the Gungnir framework.",
+  "description": "Gungnir .gnr language tools and Spear .spear HTML templates for VS Code.",
   "version": "0.1.0",
   "publisher": "gungnir",
   "license": "MIT",
@@ -17,7 +17,9 @@
     "gungnir",
     "gnr",
     "cpp",
-    "framework"
+    "framework",
+    "spear",
+    "templates"
   ],
   "main": "./dist/extension.js",
   "activationEvents": [
@@ -185,6 +187,17 @@
           "light": "./resources/icons/gungnir-light.svg",
           "dark": "./resources/icons/gungnir-dark.svg"
         }
+      },
+      {
+        "id": "gungnir-spear",
+        "aliases": [
+          "Spear",
+          "Gungnir Spear"
+        ],
+        "extensions": [
+          ".spear"
+        ],
+        "configuration": "./spear-language-configuration.json"
       }
     ],
     "grammars": [
@@ -192,12 +205,21 @@
         "language": "gungnir",
         "scopeName": "source.gungnir",
         "path": "./syntaxes/gungnir.tmLanguage.json"
+      },
+      {
+        "language": "gungnir-spear",
+        "scopeName": "text.html.spear",
+        "path": "./syntaxes/spear.tmLanguage.json"
       }
     ],
     "snippets": [
       {
         "language": "gungnir",
         "path": "./snippets/gungnir.code-snippets"
+      },
+      {
+        "language": "gungnir-spear",
+        "path": "./snippets/spear.code-snippets"
       }
     ],
     "configuration": {

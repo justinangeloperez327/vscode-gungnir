@@ -31,6 +31,11 @@ with zipfile.ZipFile(archive) as z:
     assert re.fullmatch(r'\d+\.\d+\.\d+', package['version']), 'Invalid release version'
     assert package['main'] == './dist/extension.js'
     assert package['engines']['vscode'] == '^1.100.0'
+    spear = [item for item in package['contributes']['languages'] if item['id'] == 'gungnir-spear']
+    assert len(spear) == 1 and spear[0]['extensions'] == ['.spear']
+    assert not package['contributes'].get('configurationDefaults', {}).get('[gungnir-spear]')
+    assert any(g['language'] == 'gungnir-spear' and g['scopeName'] == 'text.html.spear'
+               for g in package['contributes']['grammars'])
     assert package.get('preview') is True, 'Unvalidated native SDK features must remain preview'
     required = [
         'extension.vsixmanifest', 'extension/package.json', 'extension/readme.md',
@@ -38,6 +43,9 @@ with zipfile.ZipFile(archive) as z:
         'extension/dist/extension.js', 'extension/syntaxes/gungnir.tmLanguage.json',
         'extension/snippets/gungnir.code-snippets',
         'extension/language-configuration.json',
+        'extension/spear-language-configuration.json',
+        'extension/syntaxes/spear.tmLanguage.json',
+        'extension/snippets/spear.code-snippets',
         'extension/resources/icons/gungnir-light.svg',
         'extension/resources/icons/gungnir-dark.svg',
     ]

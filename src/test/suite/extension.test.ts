@@ -28,6 +28,29 @@ suite('Gungnir extension', () => {
     }
   });
 
+  test('associates .spear with Spear templates and leaves .gnr/HTML untouched', async () => {
+    const languages = await vscode.languages.getLanguages();
+    assert.ok(languages.includes('gungnir-spear'), 'Spear should be selectable');
+    const project = vscode.workspace.workspaceFolders?.[0];
+    assert.ok(project);
+    const view = await vscode.workspace.openTextDocument(
+      vscode.Uri.joinPath(project.uri, 'views/welcome.spear'),
+    );
+    assert.equal(view.languageId, 'gungnir-spear');
+    assert.match(view.getText(), /@extends\('layouts\/app'\)/);
+    assert.match(view.getText(), /\{\{ title \}\}/);
+    const html = await vscode.workspace.openTextDocument({language:'html',content:'<p>{{ legacy }}</p>'});
+    assert.equal(html.languageId, 'html');
+    const installed = vscode.extensions.getExtension('gungnir.vscode-gungnir');
+    assert.ok(installed);
+    const content = installed.packageJSON.contributes;
+    assert.ok(content.grammars.some((item: {language:string;path:string}) =>
+      item.language === 'gungnir-spear' && item.path === './syntaxes/spear.tmLanguage.json'));
+    assert.ok(content.snippets.some((item: {language:string}) => item.language === 'gungnir-spear'));
+    // Native Gungnir LSP intentionally serves .gnr, not .spear.
+    assert.equal(content.configurationDefaults['[gungnir-spear]'], undefined);
+  });
+
   test('does not hijack other file types', async () => {
     const document = await vscode.workspace.openTextDocument({ language: 'plaintext', content: 'model User {}' });
     assert.equal(document.languageId, 'plaintext');
