@@ -57,10 +57,45 @@ jobs:
         if: runner.os != 'Linux'
         run: npm run test:integration
 
+  native-sdk-windows:
+    name: Real Windows SDK v1.0.2 smoke
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Download and checksum official Windows SDK
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $base = 'https://github.com/justinangeloperez327/gungnir/releases/download/v1.0.2'
+          $asset = 'gungnir-v1.0.2-windows-x86_64.zip'
+          $zip = Join-Path $env:RUNNER_TEMP $asset
+          Invoke-WebRequest -Uri "$base/$asset" -OutFile $zip
+          $checksums = (Invoke-WebRequest -Uri "$base/SHA256SUMS.txt").Content
+          $entry = ($checksums -split "`r?`n" | Where-Object { $_ -match [regex]::Escape($asset) } | Select-Object -First 1)
+          if (-not $entry -or $entry -notmatch '^([a-fA-F0-9]{64})\s+\*?') { throw 'Missing official SDK checksum' }
+          $expected = $Matches[1].ToLowerInvariant()
+          $actual = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($expected -ne $actual) { throw "SDK checksum mismatch: $expected / $actual" }
+          $directory = Join-Path $env:RUNNER_TEMP 'gungnir-sdk'
+          Expand-Archive -Path $zip -DestinationPath $directory -Force
+          $cli = Get-ChildItem $directory -Recurse -File -Filter 'gungnir.exe' |
+            Where-Object { $_.Directory.Name -eq 'bin' } | Select-Object -First 1
+          if (-not $cli -or -not (Test-Path (Join-Path $cli.DirectoryName 'gungnirc.exe'))) {
+            throw 'Windows SDK does not contain adjacent CLI/compiler executables'
+          }
+          Add-Content -Path $env:GITHUB_ENV -Value "GUNGNIR_WINDOWS_CLI=$($cli.FullName)"
+          Write-Output "Verified official SDK SHA256: $actual"
+      - name: Exercise actual Windows SDK CLI and LSP
+        run: node scripts/verify-native-sdk.mjs
+
   package:
     name: Package VSIX (manual release only)
     runs-on: ubuntu-24.04
-    needs: [quality, integration]
+    needs: [quality, integration, native-sdk-windows]
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -69,8 +104,14 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
       - run: npm run package
+      - name: Verify VSIX integrity, manifest and contents
+        run: python3 scripts/verify-vsix.py vscode-gungnir.vsix
+      - name: Generate release checksum
+        run: sha256sum vscode-gungnir.vsix > vscode-gungnir.vsix.sha256
       - uses: actions/upload-artifact@v7
         with:
           name: gungnir-vsix
-          path: vscode-gungnir.vsix
+          path: |
+            vscode-gungnir.vsix
+            vscode-gungnir.vsix.sha256
           if-no-files-found: error

@@ -389,5 +389,7 @@
   },
   "dependencies": {
     "vscode-languageclient": "10.1.2"
-  }
+  },
+  "preview": true,
+  "homepage": "https://github.com/justinangeloperez327/vscode-gungnir#readme"
 }

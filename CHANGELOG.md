@@ -1,6 +1,14 @@
 # Changelog
 
-## 0.1.0 — Unreleased
+## 0.1.0 — Unreleased (preview release candidate)
+
+### Group 14
+
+- Audit the packed VSIX for integrity, required metadata, stray source/debug binaries and development content.
+- Verify an official Windows Gungnir 1.0.2 SDK download using its published SHA-256, then smoke-test native CLI and LSP protocol.
+- Generate a verifiable SHA-256 release checksum alongside the packaged VSIX.
+- Add preview metadata, explicit Marketplace publisher verification and manual release documentation.
+- Keep publishing disabled in GitHub Actions; advanced native Group 11 features require newer Windows SDK testing.
 
 ### Group 13
 

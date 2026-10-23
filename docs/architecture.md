@@ -1,4 +1,4 @@
-# Architecture — Groups 1–13
+# Architecture — Groups 1–14
 
 The extension runs in VS Code's extension host. TypeScript is bundled with esbuild to
 `dist/extension.js`. Gungnir's C++ CLI and native `gungnir lsp` server are not bundled.
@@ -16,7 +16,7 @@ The extension runs in VS Code's extension host. TypeScript is bundled with esbui
 - **Group 11:** The upstream Gungnir native language server adds compiler-backed references, rename and signature help. The existing VS Code language client automatically registers the providers from LSP capability negotiation; extension-host tests verify cross-file edits and call signatures.
 - **Group 12:** Independent client/lifecycle and language-server process per local workspace root. A serialized, generation-aware reconciler prevents stale starts. Per-root crash retry with 1/2/4-second backoff and a 30-second stability reset; cancelled on manual Stop, workspace removal and trust revocation. Reuse CLI discovery across editor switching and retain folder-scoped document selectors, file watchers and diagnostic filtering.
 - **Group 13:** Node.js 24 quality and VS Code host smoke/regression CI across Windows 2025, Ubuntu 24.04 and macOS 15. Use platform-safe generated-file validation (including Windows drive-qualified and symlinked paths); stress-test multi-root lifecycle and crash budgets. Windows LSP/CLI runtime requires a real Windows Gungnir SDK for end-to-end verification.
-- **Group 14:** Final VSIX and manual Marketplace release.
+- **Group 14:** Windows native SDK v1.0.2 download/checksum/protocol smoke in CI, strict VSIX ZIP/manifest/content audit, release SHA-256 artifact, preview metadata and a documented manual publisher sign-off. The released 1.0.2 SDK predates Group 11 native LSP features; those remain a newer-SDK manual validation gate. Nothing publishes automatically.
 
 Source of truth for language semantics is the Gungnir C++ compiler. The extension must not
 maintain an independent Gungnir parser or spawn a compiler for every completion request.

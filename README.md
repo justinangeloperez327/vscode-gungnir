@@ -5,9 +5,31 @@
 The VS Code extension for the [Gungnir](https://github.com/justinangeloperez327/gungnir)
 expressive C++23 web framework and `.gnr` language.
 
-> **Group 13 / developer preview:** Multi-root IntelliSense, diagnostics,
-> generators, formatting, build/run/dev tasks and three-platform CI checks.
-> Advanced LSP features require a compatible native Gungnir SDK.
+> **v0.1.0 preview release candidate:** Syntax highlighting, native LSP
+> features, CLI scaffolding, formatting, build/run/dev tasks and multi-root
+> workspaces. Native features require an installed compatible Gungnir SDK.
+> Manual Marketplace release is pending publisher verification.
+
+## Release candidate and installation
+
+Download the verified `vscode-gungnir.vsix` CI artifact, then in VS Code choose
+**Extensions → ⋯ → Install from VSIX...**. To use the language server and CLI
+commands, install Gungnir separately and configure `gungnir.executablePath`
+if it is not on `PATH`.
+
+**v0.1.0 is a preview.** Group 14's Windows native smoke job exercises the
+official **Gungnir 1.0.2** portable SDK for version checks, a generated model,
+and basic JSON-RPC language-server requests. References, Rename and Signature
+Help were added to Gungnir's source after that SDK release and require a newer
+SDK build. Their actual Windows SDK behavior remains a manual prerequisite for
+a general-availability release.
+
+The Marketplace publisher identifier in the manifest is `gungnir`. Its
+ownership and authentication must be verified by the publisher before manual
+publication. CI never runs a Marketplace publishing command.
+
+See [Release verification and publishing](docs/release.md) for the final
+manual review and sign-off procedure.
 
 ## Cross-platform verification
 

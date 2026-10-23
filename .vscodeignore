@@ -15,3 +15,8 @@ vitest.config.ts
 tsconfig.json
 *.vsix
 *.log
+
+# Group 14 release hygiene
+**/*.map
+.nvmrc
+.gitignore
