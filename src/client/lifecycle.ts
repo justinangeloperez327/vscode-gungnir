@@ -35,6 +35,9 @@ export class ClientLifecycle {
     if (previous) {
       try {
         await previous.client.stop();
+      } catch {
+        // The native server may already have crashed; disposal must still
+        // release watchers and diagnostic collections before a restart.
       } finally {
         await previous.client.dispose();
       }

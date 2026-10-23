@@ -12,6 +12,7 @@ import type { ManagedClient } from './lifecycle';
 export interface LaunchConfiguration {
   executable: string;
   folder: vscode.WorkspaceFolder;
+  onUnexpectedExit?: () => void;
 }
 
 export function createLanguageServer(
@@ -42,6 +43,7 @@ export function createLanguageServer(
   });
   let process: ChildProcessWithoutNullStreams | undefined;
   let filter: DiagnosticFilterStream | undefined;
+  let intentionalShutdown = false;
   const server: ServerOptions = async () => {
     // The parent controls stdout framing so stale versioned diagnostics can be
     // dropped before vscode-languageclient converts them (and drops version).
@@ -52,6 +54,9 @@ export function createLanguageServer(
       stdio: ['pipe', 'pipe', 'pipe'],
     });
     process = child;
+    child.once('close', () => {
+      if (!intentionalShutdown) config.onUnexpectedExit?.();
+    });
     await new Promise<void>((resolve, reject) => {
       child.once('spawn', resolve);
       child.once('error', reject);
@@ -102,15 +107,18 @@ export function createLanguageServer(
     'gungnir-language-server', 'Gungnir Language Server', server, clientOptions,
   );
   const terminate = () => {
+    intentionalShutdown = true;
     if (process && !process.killed) process.kill();
     process = undefined;
   };
   return {
     start: () => client.start(),
     stop: async () => {
+      intentionalShutdown = true;
       try { await client.stop(); } finally { terminate(); }
     },
     dispose: async () => {
+      intentionalShutdown = true;
       try { await client.dispose(); } finally {
         terminate();
         filter?.destroy();

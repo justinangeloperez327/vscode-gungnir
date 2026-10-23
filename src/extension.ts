@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'node:path';
 import { EXTENSION_VERSION, extensionStatus } from './core/status';
 import { discoverToolchain, type ToolchainResult } from './core/toolchain';
-import { ClientLifecycle } from './client/lifecycle';
+import { WorkspaceLanguageServers, type RootDescriptor } from './client/multi-root';
 import { createLanguageServer } from './client/server';
 import { decideServerStart } from './client/selection';
 import { GENERATORS, validateName, validateDependency, type GeneratorKind } from './core/generators';
@@ -27,7 +27,6 @@ export function activate(context: vscode.ExtensionContext): void {
   indicator.name = 'Gungnir SDK';
   indicator.command = statusCommand;
   const lspOutput = vscode.window.createOutputChannel('Gungnir Language Server', { log: true });
-  const lifecycle = new ClientLifecycle();
   const taskProvider = new GungnirTaskProvider(output);
   context.subscriptions.push(vscode.tasks.registerTaskProvider('gungnir', taskProvider));
   context.subscriptions.push({ dispose: () => { void taskProvider.dispose(); } });
@@ -35,13 +34,34 @@ export function activate(context: vscode.ExtensionContext): void {
     if (isGungnirTask(event.execution)) taskProvider.onTaskFinished(event.execution, event.exitCode);
   }));
   context.subscriptions.push(output, indicator, lspOutput);
-  context.subscriptions.push({ dispose: () => { void lifecycle.dispose(); } });
 
   let previous: ToolchainResult = untrustedResult();
   let generation = 0;
   let lspGeneration = 0;
   let manualStop = false;
   let lspDetail = 'Not started';
+
+  interface WorkspaceRoot extends RootDescriptor { folder: vscode.WorkspaceFolder }
+  const servers = new WorkspaceLanguageServers<WorkspaceRoot>(
+    (root, executable, onUnexpectedExit) => createLanguageServer(
+      { executable, folder: root.folder, onUnexpectedExit }, lspOutput,
+    ),
+    {
+      onStatus: () => {
+        const roots = servers.snapshots;
+        lspDetail = roots.length
+          ? roots.map((item) => item.name + ': ' + item.state).join('; ')
+          : manualStop ? 'Stopped by user' : 'No active Gungnir documents';
+        setIndicator(previous);
+      },
+      onFailure: (uri, error) => {
+        const detail = error instanceof Error ? error.message : String(error);
+        lspOutput.error('Gungnir LSP [' + uri + ']: ' + detail);
+      },
+    },
+  );
+  context.subscriptions.push({ dispose: () => { void servers.dispose(); } });
+
 
   function showIndicator(): void {
     if (vscode.window.activeTextEditor?.document.languageId === 'gungnir') {
@@ -113,13 +133,27 @@ export function activate(context: vscode.ExtensionContext): void {
       && !manualStop;
   }
 
+  function foldersWithOpenSources(): WorkspaceRoot[] {
+    if (!vscode.workspace.isTrusted) return [];
+    const folders = new Map<string, vscode.WorkspaceFolder>();
+    for (const document of vscode.workspace.textDocuments) {
+      if (document.languageId !== 'gungnir' || document.uri.scheme !== 'file'
+        || !document.uri.path.toLowerCase().endsWith('.gnr')) continue;
+      const folder = vscode.workspace.getWorkspaceFolder(document.uri);
+      if (folder?.uri.scheme === 'file') folders.set(folder.uri.toString(), folder);
+    }
+    return [...folders.values()].map((folder) => ({
+      uri: folder.uri.toString(), name: folder.name, folder,
+    }));
+  }
+
   async function reconcile(force = false): Promise<void> {
     const current = ++lspGeneration;
-    const folder = selectedFolder();
-    const settings = vscode.workspace.getConfiguration(configSection);
-    const enabled = settings.get<boolean>('languageServer.enabled', true) && !manualStop;
-    if (!vscode.workspace.isTrusted || !enabled || !folder) {
-      await lifecycle.stop();
+    const roots = foldersWithOpenSources();
+    const enabled = vscode.workspace.getConfiguration(configSection)
+      .get<boolean>('languageServer.enabled', true) && !manualStop;
+    if (!vscode.workspace.isTrusted || !enabled || !roots.length) {
+      await servers.stopAll();
       if (current === lspGeneration) {
         lspDetail = !vscode.workspace.isTrusted ? 'Workspace is not trusted'
           : !enabled ? 'Disabled or stopped' : 'Open a .gnr file in a workspace';
@@ -128,42 +162,29 @@ export function activate(context: vscode.ExtensionContext): void {
       return;
     }
 
-    const detected = await refresh();
+    // Reuse a verified CLI across editor switching. Re-probe only after a
+    // config change, explicit restart, or an unavailable previous toolchain.
+    const detected = (force || !previous.executable) ? await refresh() : previous;
     if (current !== lspGeneration || manualStop || !vscode.workspace.isTrusted) return;
     const decision = decideServerStart(true, enabled, true, detected);
     if (!decision.allowed || !decision.executable) {
-      await lifecycle.stop();
+      await servers.stopAll();
       lspDetail = detected.message;
       setIndicator(detected);
       return;
     }
-    const executable = decision.executable;
-    const key = folder.uri.toString() + '|' + executable;
-    try {
-      lspDetail = 'Starting';
+    await servers.synchronize(roots, decision.executable, force);
+    if (current === lspGeneration) {
+      const snapshots = servers.snapshots;
+      lspDetail = snapshots.map((item) => item.name + ': ' + item.state).join('; ');
       setIndicator(detected);
-      await lifecycle.start(key, () => createLanguageServer(
-        { executable, folder }, lspOutput,
-      ), force);
-      if (current === lspGeneration) {
-        lspDetail = 'Running (' + folder.name + ')';
-        lspOutput.appendLine('Connected to ' + executable + ' lsp in ' + folder.uri.fsPath);
-        setIndicator(detected);
-      }
-    } catch (error) {
-      const description = error instanceof Error ? error.message : String(error);
-      if (current === lspGeneration) {
-        lspDetail = 'Failed: ' + description;
-        lspOutput.appendLine('Gungnir language server failed: ' + description);
-        setIndicator(detected);
-      }
     }
   }
 
   async function stopLanguageServer(): Promise<void> {
     manualStop = true;
     ++lspGeneration;
-    await lifecycle.stop();
+    await servers.stopAll();
     lspDetail = 'Stopped by user';
     setIndicator(previous);
   }
@@ -450,15 +471,16 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand('gungnir.startLanguageServer', async () => {
       manualStop = false;
       await reconcile(true);
-      return { state: lifecycle.state, detail: lspDetail };
+      return { state: servers.state, detail: lspDetail, servers: servers.snapshots };
     }),
     vscode.commands.registerCommand('gungnir.stopLanguageServer', async () => {
       await stopLanguageServer();
-      return { state: lifecycle.state, detail: lspDetail };
+      return { state: servers.state, detail: lspDetail, servers: servers.snapshots };
     }),
     vscode.commands.registerCommand('gungnir.languageServerStatus', () => ({
-      state: lifecycle.state,
+      state: servers.state,
       detail: lspDetail,
+      servers: servers.snapshots,
       workspace: selectedFolder()?.uri.fsPath,
       executable: previous.executable,
     })),
@@ -469,9 +491,12 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.workspace.onDidOpenTextDocument((doc) => {
       if (doc.languageId === 'gungnir' && autoStart()) void reconcile();
     }),
+    vscode.workspace.onDidCloseTextDocument((doc) => {
+      if (doc.languageId === 'gungnir') void reconcile();
+    }),
     vscode.workspace.onDidChangeWorkspaceFolders(() => {
-      if (autoStart()) void reconcile(true);
-      else void stopLanguageServer();
+      if (autoStart()) void reconcile();
+      else { ++lspGeneration; void servers.stopAll(); }
     }),
     vscode.workspace.onDidChangeConfiguration((event) => {
       // Formatting preferences are read per request by the LSP middleware.
@@ -484,7 +509,7 @@ export function activate(context: vscode.ExtensionContext): void {
         'gungnir.languageServer.enabled',
       ].some((section) => event.affectsConfiguration(section))) {
         if (autoStart()) void reconcile(true);
-        else { ++lspGeneration; void lifecycle.stop(); }
+        else { ++lspGeneration; void servers.stopAll(); }
       }
     }),
     vscode.workspace.onDidGrantWorkspaceTrust(() => {
@@ -492,7 +517,7 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
   );
   setIndicator(previous);
-  if (autoStart() && selectedFolder()) {
+  if (autoStart() && foldersWithOpenSources().length) {
     void reconcile();
   } else if (vscode.workspace.getConfiguration(configSection).get<boolean>('toolchain.autoDetect', true)) {
     void refresh();

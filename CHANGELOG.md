@@ -2,6 +2,15 @@
 
 ## 0.1.0 — Unreleased
 
+### Group 12
+
+- Run one native Gungnir LSP client per active local workspace folder instead of switching a single client between roots.
+- Retain independent document selectors, diagnostics, file watchers and client lifecycles.
+- Recover unexpectedly closed servers per project with bounded 1/2/4-second backoff and a 30-second stability reset.
+- Cancel pending starts/retries on manual Stop, workspace removal and trust changes.
+- Reuse toolchain discovery on normal editor switches; add unit and multi-root extension-host regression tests.
+
+
 ### Group 11
 
 - Extend upstream native Gungnir LSP with compiler-backed References, Prepare Rename, Rename, and Signature Help.

@@ -1,4 +1,4 @@
-# Architecture — Groups 1–11
+# Architecture — Groups 1–12
 
 The extension runs in VS Code's extension host. TypeScript is bundled with esbuild to
 `dist/extension.js`. Gungnir's C++ CLI and native `gungnir lsp` server are not bundled.
@@ -14,7 +14,8 @@ The extension runs in VS Code's extension host. TypeScript is bundled with esbui
 - **Group 9:** Invoke native CLI `new` and `make:*` commands with trusted-workspace checks, strict argument arrays and validation, project-profile-aware support, no-overwrite verification, cancellable bounded execution, and open generated `.gnr` files.
 - **Group 10:** Workspace-scoped VS Code TaskProvider and commands for `build`, `run`, `dev`, and `--release` variants. Tasks use `ProcessExecution`, parse native diagnostic output with problem matchers, maintain task lifecycle and allow explicit termination. Never start processes automatically.
 - **Group 11:** The upstream Gungnir native language server adds compiler-backed references, rename and signature help. The existing VS Code language client automatically registers the providers from LSP capability negotiation; extension-host tests verify cross-file edits and call signatures.
-- **Groups 12–14:** Performance, multi-root, regression and manual release.
+- **Group 12:** Independent client/lifecycle and language-server process per local workspace root. A serialized, generation-aware reconciler prevents stale starts. Per-root crash retry with 1/2/4-second backoff and a 30-second stability reset; cancelled on manual Stop, workspace removal and trust revocation. Reuse CLI discovery across editor switching and retain folder-scoped document selectors, file watchers and diagnostic filtering.
+- **Groups 13–14:** Cross-platform regression and manual release.
 
 Source of truth for language semantics is the Gungnir C++ compiler. The extension must not
 maintain an independent Gungnir parser or spawn a compiler for every completion request.

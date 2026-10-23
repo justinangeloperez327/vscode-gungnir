@@ -13,7 +13,7 @@
 | 9 | Safe CLI project and declaration generators with structured-profile checks | Complete |
 | 10 | Native build/run/dev tasks, terminal output and task lifecycle controls | Complete |
 | 11 | Native References, Rename and Signature Help with protocol regression tests | Complete |
-| 12 | Multi-root, performance, cancellation, resilience | Planned |
+| 12 | Independent multi-root LSP clients, bounded restart and lifecycle regression tests | Complete |
 | 13 | Regression and cross-platform tests | Planned |
 | 14 | VSIX validation and manual Marketplace release | Planned |
 

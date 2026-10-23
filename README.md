@@ -5,9 +5,9 @@
 The VS Code extension for the [Gungnir](https://github.com/justinangeloperez327/gungnir)
 expressive C++23 web framework and `.gnr` language.
 
-> **Group 11 / developer preview:** Syntax highlighting, compiler diagnostics,
-> native IntelliSense, formatting, CLI generators, build/run/dev tasks, and
-> advanced LSP features with a Group 11-compatible SDK. Multi-root support follows.
+> **Group 12 / developer preview:** Multi-root Gungnir workspaces, native
+> IntelliSense, diagnostics, generators, formatting, and build/run/dev tasks.
+> Native advanced language features require a compatible installed SDK.
 
 ## Requirements
 
@@ -219,6 +219,25 @@ part of your existing workflow:
 The extension is the task provider. You do not need to hard-code executable
 paths in `tasks.json`; configure `gungnir.executablePath` or
 `gungnir.sdkRoot` in VS Code settings.
+
+## Multi-root workspaces and recovery
+
+Group 12 runs one independent `gungnir lsp` process for each trusted local
+workspace folder containing an open `.gnr` document. Opening or switching
+between documents no longer evicts another project's language server. Closing
+the last document or removing a workspace folder releases that session.
+
+If an LSP process exits unexpectedly, the extension retries that folder
+after delays of **1, 2 and 4 seconds**. Repeated fast crashes exhaust the retry
+budget to avoid a restart loop. After 30 seconds of healthy operation, its
+failure budget resets. **Gungnir: Start / Restart Language Server** retries
+all desired workspaces on demand. Manual Stop, untrusted workspaces and disabled
+language server settings cancel pending retries.
+
+Use **Gungnir: Language Server Status** to inspect per-project states, and
+**Gungnir: Stop Language Server** to stop all active sessions. Documents and
+diagnostics remain scoped to their own project. No build or dev tasks run
+automatically as part of language server recovery.
 
 ## Advanced native IntelliSense
 

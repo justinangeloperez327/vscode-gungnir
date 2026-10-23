@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 'use strict';
+/* eslint-disable @typescript-eslint/no-require-imports -- native CLI CJS fixture */
+const fs = require('node:fs');
+const path = require('node:path');
 // Protocol-compliant test double: incremental text sync, versioned diagnostics,
 // clean shutdown and an intentionally stale publish after a quick correction.
 if (process.argv[2] === '--version') {
@@ -228,6 +231,11 @@ process.stdin.on('data', (chunk) => {
       });
     } else if (msg.method === 'textDocument/didOpen') {
       const doc = params.textDocument;
+      const crashFlag = path.join(process.cwd(), '.gungnir-fixture-crash-once');
+      if (doc.text.includes('CRASH_ONCE') && fs.existsSync(crashFlag)) {
+        fs.unlinkSync(crashFlag);
+        process.exit(17);
+      }
       documents.set(doc.uri, { ...doc });
       analyze(doc);
     } else if (msg.method === 'textDocument/didChange') {

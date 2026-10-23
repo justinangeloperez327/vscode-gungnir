@@ -484,4 +484,85 @@ suite('Gungnir extension', () => {
     }
   });
 
+
+  test('isolates two workspace roots, survives a server crash, and removes stale clients', async () => {
+    if (process.platform !== 'linux' || !vscode.workspace.isTrusted) return;
+    const originalRoot = vscode.workspace.workspaceFolders?.[0];
+    const extension = vscode.extensions.getExtension('gungnir.vscode-gungnir');
+    assert.ok(originalRoot);
+    assert.ok(extension);
+    const cli = vscode.Uri.joinPath(extension.extensionUri, 'test-fixtures', 'mock-gungnir.cjs');
+    const config = vscode.workspace.getConfiguration('gungnir');
+    const originalCli = config.inspect<string>('executablePath')?.globalValue;
+    const originalEnabled = config.inspect<boolean>('languageServer.enabled')?.globalValue;
+    const os = await import('node:os');
+    const fs = await import('node:fs/promises');
+    const path = await import('node:path');
+    const temporary = await fs.mkdtemp(path.join(os.tmpdir(), 'gungnir-multiroot-'));
+    const secondUri = vscode.Uri.file(temporary);
+    const secondFile = vscode.Uri.joinPath(secondUri, 'app', 'controllers', 'Secondary.gnr');
+    const status = async () => vscode.commands.executeCommand<{
+      state: string;
+      servers: Array<{ uri: string; state: string; attempts: number }>;
+    }>('gungnir.languageServerStatus');
+    const eventually = async (condition: () => Promise<boolean>, message: string) => {
+      const deadline = Date.now() + 12000;
+      while (Date.now() < deadline) {
+        if (await condition()) return;
+        await new Promise((resolve) => setTimeout(resolve, 90));
+      }
+      assert.fail(message + ': ' + JSON.stringify(await status()));
+    };
+    try {
+      await fs.mkdir(path.dirname(secondFile.fsPath), { recursive: true });
+      await fs.writeFile(path.join(temporary, '.gungnir-project'), 'name=secondary\nprofile=structured\n');
+      await fs.writeFile(path.join(temporary, '.gungnir-fixture-crash-once'), 'crash');
+      await fs.writeFile(secondFile.fsPath, 'controller Secondary { Response index() { return text("CRASH_ONCE"); } }\n');
+      await config.update('languageServer.enabled', true, vscode.ConfigurationTarget.Global);
+      await config.update('executablePath', cli.fsPath, vscode.ConfigurationTarget.Global);
+      const oldDoc = await vscode.workspace.openTextDocument(
+        vscode.Uri.joinPath(originalRoot.uri, 'app/controllers/HomeController.gnr'),
+      );
+      await vscode.window.showTextDocument(oldDoc);
+      await vscode.commands.executeCommand('gungnir.startLanguageServer');
+      const index = vscode.workspace.workspaceFolders?.length ?? 0;
+      assert.equal(vscode.workspace.updateWorkspaceFolders(index, 0, { uri: secondUri }), true);
+      await eventually(async () => vscode.workspace.getWorkspaceFolder(secondFile) !== undefined,
+        'Second project must become a workspace folder');
+      const secondary = await vscode.workspace.openTextDocument(secondFile);
+      await vscode.window.showTextDocument(secondary);
+      await eventually(async () => {
+        const result = await status();
+        return result.servers?.length === 2
+          && result.servers.every((item) => item.state === 'running')
+          && result.servers.some((item) => item.uri === secondUri.toString() && item.attempts >= 1);
+      }, 'Both independent servers should run after recovering the secondary crash');
+      assert.equal((await status()).servers.length, 2);
+      // Switching the active editor must not replace/restart either session.
+      await vscode.window.showTextDocument(oldDoc);
+      assert.equal((await status()).servers.length, 2);
+      const dropIndex = vscode.workspace.workspaceFolders?.findIndex(
+        (folder) => folder.uri.toString() === secondUri.toString(),
+      ) ?? -1;
+      assert.ok(dropIndex >= 0);
+      assert.equal(vscode.workspace.updateWorkspaceFolders(dropIndex, 1), true);
+      await eventually(async () => {
+        const result = await status();
+        return result.servers?.length === 1
+          && result.servers[0].uri === originalRoot.uri.toString();
+      }, 'Removing a workspace folder must dispose only its server');
+      await vscode.commands.executeCommand('gungnir.stopLanguageServer');
+      assert.equal((await status()).servers.length, 0);
+    } finally {
+      const maybeIndex = vscode.workspace.workspaceFolders?.findIndex(
+        (folder) => folder.uri.toString() === secondUri.toString(),
+      ) ?? -1;
+      if (maybeIndex >= 0) vscode.workspace.updateWorkspaceFolders(maybeIndex, 1);
+      await vscode.commands.executeCommand('gungnir.stopLanguageServer');
+      await config.update('executablePath', originalCli, vscode.ConfigurationTarget.Global);
+      await config.update('languageServer.enabled', originalEnabled, vscode.ConfigurationTarget.Global);
+      await fs.rm(temporary, { recursive: true, force: true });
+    }
+  });
+
 });
