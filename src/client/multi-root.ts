@@ -50,8 +50,8 @@ export class WorkspaceLanguageServers<T extends RootDescriptor> {
   get snapshots(): RootSnapshot[] {
     return [...this.sessions.values()].map((session) => ({
       uri: session.root.uri, name: session.root.name,
-      state: session.exhausted ? 'failed'
-        : session.crashed ? 'restarting' : session.lifecycle.state,
+      state: (session.exhausted ? 'failed'
+        : session.crashed ? 'restarting' : session.lifecycle.state) as RootSnapshot['state'],
       attempts: session.attempts, executable: session.executable,
     })).sort((a, b) => a.uri.localeCompare(b.uri));
   }
