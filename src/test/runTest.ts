@@ -4,7 +4,7 @@ import * as path from 'node:path';
 async function main(): Promise<void> {
   const extensionDevelopmentPath = path.resolve(__dirname, '..');
   const extensionTestsPath = path.resolve(__dirname, 'suite', 'index.js');
-  const workspacePath = path.resolve(extensionDevelopmentPath, 'test-fixtures', 'sample-project');
+  const workspacePath = path.resolve(extensionDevelopmentPath, 'test-fixtures', 'integration.code-workspace');
   await runTests({
     extensionDevelopmentPath,
     extensionTestsPath,
